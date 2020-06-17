@@ -1,0 +1,77 @@
+/'
+* Copyright (c) 2020 Intel Corporation
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*'/
+
+@startuml
+class DefaultRewardPolicy {
+    +ValueType getRewardForStateAndAction(const size_t state, const size_t action) const
+    +void setRewardForStateAndAction(const size_t state, const size_t action, const ValueType& reward)
+    -ValueType mRewardTable[NumberOfStates][NumberOfActions]
+}
+RewardPolicy <|-- DefaultRewardPolicy
+
+class QLearningEnvironment {
+    #ValueType mLearningRate;
+    #ValueType mDiscountFactor;
+    #size_t mRandomActionDecisionPoint;
+    #RandomNumberGeneratorPolicy mRandomNumberGenerator;
+    #RewardPolicy mRewardPolicy;
+}
+QLearningEnvironment <|-- EnvironmentType
+QLearningEnvironment -- RewardPolicy
+
+class QLearningEnvironment::experience_t {
+    +size_t state
+    +size_t action
+    +ValueType reward
+    +size_t newState
+}
+
+class QLearner {
+    +void updateFromExperience(const QLearningEnvironment::experience_t& experience)
+    -EnvironmentType mEnvironment
+    -size_t mPreviousState
+    -size_t mState
+    -size_t mGoalState
+    -ValueType mAccumulatedReward
+    -QValuePolicy mQValuePolicy
+}
+
+QLearner -- QLearnerStateToActionPolicy
+QLearner -- EnvironmentType
+QLearner -- QLearningEnvironment::experience_t
+
+class QTablePolicy {
+    +ValueType getQValue(const size_t state, const size_t action) const
+    +void setQValue(const size_t state, const size_t action, const ValueType& value)
+    -ValueType mQTable[EnvironmentType::EnvironmentNumberOfStates][EnvironmentType::EnvironmentNumberOfActions]
+}
+QLearnerQValuePolicy <|-- QTablePolicy
+
+class QLearnerStateToActionPolicy {
+    +{static} size_t selectActionForState()
+}
+
+QLearnerStateToActionPolicy <|-- ArgMaxPolicy
+
+QLearnerStateToActionPolicy -- QLearnerQValuePolicy
+
+@enduml
