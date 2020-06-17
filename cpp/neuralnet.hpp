@@ -3061,66 +3061,6 @@ namespace tinymind {
     };
 
     /**
-     * Gated recurrent neural network.
-     */
-    template<
-            typename ValueType,
-            size_t NumberOfInputs,
-            size_t NumberOfHiddenLayers,
-            size_t NumberOfNeuronsInHiddenLayers,
-            size_t NumberOfOutputs,
-            typename TransferFunctionsPolicy,
-            bool IsTrainable = true,
-            size_t BatchSize = 1,
-            outputLayerConfiguration_e OutputLayerConfiguration = FeedForwardOutputLayerConfiguration
-            >
-    class GatedRecurrentMultilayerPerceptron : public RecurrentMultilayerPerceptron<ValueType,
-                                                                                    NumberOfInputs,
-                                                                                    NumberOfHiddenLayers,
-                                                                                    NumberOfNeuronsInHiddenLayers,
-                                                                                    NumberOfOutputs, 
-                                                                                    TransferFunctionsPolicy,
-                                                                                    IsTrainable,
-                                                                                    BatchSize,
-                                                                                    true,
-                                                                                    GRUHiddenLayerConfig,
-                                                                                    1,
-                                                                                    OutputLayerConfiguration
-                                                                                    >
-    {
-    };
-
-    /**
-     * Long short-term memory neural network.
-     */
-    template<
-            typename ValueType,
-            size_t NumberOfInputs,
-            size_t NumberOfHiddenLayers,
-            size_t NumberOfNeuronsInHiddenLayers,
-            size_t NumberOfOutputs,
-            typename TransferFunctionsPolicy,
-            bool IsTrainable = true,
-            size_t BatchSize = 1,
-            outputLayerConfiguration_e OutputLayerConfiguration = FeedForwardOutputLayerConfiguration
-            >
-    class LstmNetwork : public RecurrentMultilayerPerceptron<   ValueType,
-                                                                NumberOfInputs,
-                                                                NumberOfHiddenLayers,
-                                                                NumberOfNeuronsInHiddenLayers,
-                                                                NumberOfOutputs, 
-                                                                TransferFunctionsPolicy,
-                                                                IsTrainable,
-                                                                BatchSize,
-                                                                true,
-                                                                LSTMHiddenLayerConfig,
-                                                                1,
-                                                                OutputLayerConfiguration
-                                                                >
-    {
-    };
-
-    /**
      * Elman Network
      */
     template<
