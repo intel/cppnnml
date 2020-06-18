@@ -33,9 +33,6 @@ class LastHiddenLayerType {
 class OutputLayerType {
 }
 
-class NeuralNetworkRecurrentLayerType {
-}
-
 class TrainingPolicyType {
 }
 
@@ -59,20 +56,15 @@ class MultilayerPerceptron {
 class RecurrentMultilayerPerceptron {
 }
 
-class GatedRecurrentMultilayerPerceptron {
-}
-
 MultilayerPerceptron *-- InputLayerType
 MultilayerPerceptron *-- InnerHiddenLayerManager
 MultilayerPerceptron *-- LastHiddenLayerType
 MultilayerPerceptron *-- OutputLayerType
-MultilayerPerceptron *-- NeuralNetworkRecurrentLayerType
+MultilayerPerceptron *-- RecurrentLayerType
 MultilayerPerceptron *-- TrainingPolicyType
 MultilayerPerceptron *-- GradientsManagerType
 MultilayerPerceptron - TransferFunctionsPolicy
 RecurrentMultilayerPerceptron -|> MultilayerPerceptron
-GatedRecurrentMultilayerPerceptron -|> RecurrentMultilayerPerceptron
-LstmNetwork -|> GatedRecurrentMultilayerPerceptron
 ElmanNetwork -|> RecurrentMultilayerPerceptron
 
 @enduml
