@@ -1,0 +1,45 @@
+/'
+* Copyright (c) 2020 Intel Corporation
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*'/
+
+@startuml
+title Simple Feed Forward Neural Network
+Application -> NeuralNet : feedForward
+NeuralNet -> InputLayerType : feedForward
+NeuralNet -> HiddenLayerFeedForwardManagerType : feedForward
+note over InnerHiddenLayerManager : InnerHiddenLayers are all hidden layers before\nthe last one, which feeds the OutputLayer
+loop 1 to Number Of Inner Hidden Layers
+HiddenLayerFeedForwardManagerType -> InnerHiddenLayerType : feedForward
+end
+note over InnerHiddenLayerManager : InnerHiddenLayers may not exists\nbut the last one always does
+HiddenLayerFeedForwardManagerType -> LastHiddenLayerType : feedForward
+NeuralNet -> OutputLayerType : feedForward
+Application -> NeuralNet : error = calculateError
+loop Number Of Output Neurons
+NeuralNet -> OutputLayer : getLearnedValue
+end
+NeuralNet -> TransferFunctionsPolicy : error = calculateError(learned values)
+Application -> TransferFunctionsPolicy : train = !isWithinZeroTolerance(error)
+alt train
+Application -> NeuralNet : trainNetwork
+end
+Application -> NeuralNet : learnedValues = getLearnedValues
+@enduml
