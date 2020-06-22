@@ -122,7 +122,7 @@ struct MazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t
     static const ValueType EnvironmentInvalidActionValue;
     static const ValueType ONE;
     
-    MazeEnvironment(const ValueType& learningRate, const ValueType& discountFactor, const uint32_t randomActionDecisionPoint) : 
+    MazeEnvironment(const ValueType& learningRate, const ValueType& discountFactor, const size_t randomActionDecisionPoint) : 
         ParentType(learningRate, discountFactor, randomActionDecisionPoint), mGoalState(EnvironmentInvalidState)
     {
     }
@@ -354,7 +354,7 @@ BOOST_AUTO_TEST_CASE(test_qlearn_change_discount_factor)
 
 BOOST_AUTO_TEST_CASE(test_qlearn_choose_random_action)
 {
-    const uint32_t oldDecisionPoint = qLearner.getEnvironment().getRandomActionDecisionPoint();
+    const size_t oldDecisionPoint = qLearner.getEnvironment().getRandomActionDecisionPoint();
     std::vector<bool> choices;
     std::size_t t;
 
