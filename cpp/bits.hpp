@@ -26,7 +26,6 @@ namespace tinymind {
     template<uint64_t value>
     struct NumBitsForValue
     {
-        // static const size_t result = 1 + NumBitsForValue<(value >> 1)>::result;
         static size_t result()
         {
             return (1 + NumBitsForValue<(value >> 1)>::result());
@@ -36,7 +35,6 @@ namespace tinymind {
     template<>
     struct NumBitsForValue<0>
     {
-        // static const size_t result = 0;
         static size_t result()
         {
             return 0;
