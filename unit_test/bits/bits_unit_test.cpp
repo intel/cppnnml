@@ -33,21 +33,21 @@ BOOST_AUTO_TEST_SUITE(test_suite_bits)
 
 BOOST_AUTO_TEST_CASE(test_case_limits)
 {
-    BOOST_TEST(0 == tinymind::NumBitsForValue<0>::result);
-    BOOST_TEST(1 == tinymind::NumBitsForValue<1>::result);
-    BOOST_TEST(2 == tinymind::NumBitsForValue<2>::result);
-    BOOST_TEST(2 == tinymind::NumBitsForValue<3>::result);
-    BOOST_TEST(8 == tinymind::NumBitsForValue<UINT8_MAX - 1>::result);
-    BOOST_TEST(8 == tinymind::NumBitsForValue<UINT8_MAX>::result);
-    BOOST_TEST(9 == tinymind::NumBitsForValue<UINT8_MAX + 1>::result);
-    BOOST_TEST(16 == tinymind::NumBitsForValue<UINT16_MAX - 1>::result);
-    BOOST_TEST(16 == tinymind::NumBitsForValue<UINT16_MAX>::result);
-    BOOST_TEST(17 == tinymind::NumBitsForValue<UINT16_MAX + 1>::result);
-    BOOST_TEST(32 == tinymind::NumBitsForValue<UINT32_MAX - 1>::result);
-    BOOST_TEST(32 == tinymind::NumBitsForValue<UINT32_MAX>::result);
-    BOOST_TEST(33 == tinymind::NumBitsForValue<static_cast<uint64_t>(UINT32_MAX) + 1>::result);
-    BOOST_TEST(64 == tinymind::NumBitsForValue<UINT64_MAX - 1>::result);
-    BOOST_TEST(64 == tinymind::NumBitsForValue<UINT64_MAX>::result);
+    BOOST_TEST(0 == tinymind::NumBitsForValue<0>::result());
+    BOOST_TEST(1 == tinymind::NumBitsForValue<1>::result());
+    BOOST_TEST(2 == tinymind::NumBitsForValue<2>::result());
+    BOOST_TEST(2 == tinymind::NumBitsForValue<3>::result());
+    BOOST_TEST(8 == tinymind::NumBitsForValue<UINT8_MAX - 1>::result());
+    BOOST_TEST(8 == tinymind::NumBitsForValue<UINT8_MAX>::result());
+    BOOST_TEST(9 == tinymind::NumBitsForValue<UINT8_MAX + 1>::result());
+    BOOST_TEST(16 == tinymind::NumBitsForValue<UINT16_MAX - 1>::result());
+    BOOST_TEST(16 == tinymind::NumBitsForValue<UINT16_MAX>::result());
+    BOOST_TEST(17 == tinymind::NumBitsForValue<UINT16_MAX + 1>::result());
+    BOOST_TEST(32 == tinymind::NumBitsForValue<UINT32_MAX - 1>::result());
+    BOOST_TEST(32 == tinymind::NumBitsForValue<UINT32_MAX>::result());
+    BOOST_TEST(33 == tinymind::NumBitsForValue<static_cast<uint64_t>(UINT32_MAX) + 1>::result());
+    BOOST_TEST(64 == tinymind::NumBitsForValue<UINT64_MAX - 1>::result());
+    BOOST_TEST(64 == tinymind::NumBitsForValue<UINT64_MAX>::result());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
