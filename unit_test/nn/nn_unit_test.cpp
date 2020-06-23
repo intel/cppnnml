@@ -59,6 +59,20 @@ namespace tinymind {
     };
 }
 
+namespace tinymind {
+    template<>
+    struct ZeroToleranceCalculator<double>
+    {
+        static bool isWithinZeroTolerance(const double& value)
+        {
+            static const double zeroTolerance(0.004);
+            static const double negativeTolerance = (static_cast<double>(-1.0) * zeroTolerance);
+
+            return ((0 == value) || ((value < zeroTolerance) && (value > negativeTolerance)));
+        }
+    };
+}
+
 using namespace std;
 
 #define TRAINING_ITERATIONS 2000

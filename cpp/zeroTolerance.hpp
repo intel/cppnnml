@@ -36,18 +36,4 @@ namespace tinymind {
             return ((Constants<ValueType>::zero() == value) || ((value < zeroTolerance) && (value > negativeTolerance)));
         }
     };
-
-#ifndef __ghs__
-    template<>
-    struct ZeroToleranceCalculator<double>
-    {
-        static bool isWithinZeroTolerance(const double& value)
-        {
-            static const double zeroTolerance(0.004);
-            static const double negativeTolerance = (static_cast<double>(-1.0) * zeroTolerance);
-
-            return ((0 == value) || ((value < zeroTolerance) && (value > negativeTolerance)));
-        }
-    };
-#endif // __ghs__
 }
