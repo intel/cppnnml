@@ -31,7 +31,7 @@
 #include "qformat.hpp"
 #include "activation.hpp"
 
-namespace fs = std::filesystem;
+namespace fs = std::filesystem; // Must use C++ 17
 
 typedef enum
 {
@@ -144,16 +144,14 @@ static copyrightSpan_t getCurrentCopyright(const string& path)
     return span;
 }
 
-static void writeFileCopyright(const string& path, const copyrightSpan_t& span)
+static void writeFileCopyrightAndLicense(const string& path, const copyrightSpan_t& span)
 {
     time_t t = time(NULL);
     tm* timePtr = localtime(&t);
     const size_t currentYear = (1900 + timePtr->tm_year);
 
     ofstream outFile(path);
-    outFile << "/*" << endl;
-    outFile << "* INTEL CONFIDENTIAL" << endl;
-    outFile << "*" << endl;
+    outFile << "/**" << endl;
     if((span.startYear == 0) && (span.endYear == 0))
     {
         outFile << "* Copyright " << currentYear << " Intel Corporation All Rights Reserved." << endl;
@@ -174,24 +172,24 @@ static void writeFileCopyright(const string& path, const copyrightSpan_t& span)
         outFile << "* Copyright " << span.startYear << "-" << currentYear << " Intel Corporation All Rights Reserved." << endl;
     }
     outFile << "*" << endl;
-    outFile << "* The source code contained or described herein and all documents related to" << endl;
-    outFile << "* the source code (\"Material\") are owned by Intel Corporation or its" << endl;
-    outFile << "* suppliers or licensors. Title to the Material remains with Intel" << endl;
-    outFile << "* Corporation or its suppliers and licensors. The Material contains trade" << endl;
-    outFile << "* secrets and proprietary and confidential information of Intel or its" << endl;
-    outFile << "* suppliers and licensors. The Material is protected by worldwide copyright" << endl;
-    outFile << "* and trade secret laws and treaty provisions. No part of the Material may be" << endl;
-    outFile << "* used, copied, reproduced, modified, published, uploaded, posted," << endl;
-    outFile << "* transmitted, distributed, or disclosed in any way without Intel's prior" << endl;
-    outFile << "* express written permission." << endl;
+    outFile << "* Permission is hereby granted, free of charge, to any person obtaining a copy" << endl;
+    outFile << "* of this software and associated documentation files (the \"Software\"), to deal" << endl;
+    outFile << "* in the Software without restriction, including without limitation the rights" << endl;
+    outFile << "* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell" << endl;
+    outFile << "* copies of the Software, and to permit persons to whom the Software is" << endl;
+    outFile << "* furnished to do so, subject to the following conditions:" << endl;
     outFile << "*" << endl;
-    outFile << "* No license under any patent, copyright, trade secret or other intellectual" << endl;
-    outFile << "* property right is granted to or conferred upon you by disclosure or" << endl;
-    outFile << "* delivery of the Materials, either expressly, by implication, inducement," << endl;
-    outFile << "* estoppel or otherwise. Any license under such intellectual property rights" << endl;
-    outFile << "* must be express and approved by Intel in writing." << endl;
+    outFile << "* The above copyright notice and this permission notice shall be included in all" << endl;
+    outFile << "* copies or substantial portions of the Software." << endl;
     outFile << "*" << endl;
-    outFile << "*****************************************************************************/" << endl;
+    outFile << "* THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR" << endl;
+    outFile << "* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY," << endl;
+    outFile << "* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE" << endl;
+    outFile << "* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER" << endl;
+    outFile << "* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM," << endl;
+    outFile << "* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE" << endl;
+    outFile << "* SOFTWARE." << endl;
+    outFile << "*/" << endl;
     outFile << endl;
     outFile.flush();
 }
@@ -214,7 +212,7 @@ static void writeActivationFileHeader(const string& path)
 {
     copyrightSpan_t span = getCurrentCopyright(path);
 
-    writeFileCopyright(path, span);
+    writeFileCopyrightAndLicense(path, span);
 
     ofstream outFile(path, ofstream::app);
     outFile << "#pragma once" << endl << endl;
@@ -224,7 +222,7 @@ static void writeFileHeader(const string& path)
 {
     copyrightSpan_t span = getCurrentCopyright(path);
 
-    writeFileCopyright(path, span);
+    writeFileCopyrightAndLicense(path, span);
 
     ofstream outFile(path, ofstream::app);
     outFile << "#pragma once" << endl << endl;
@@ -257,10 +255,10 @@ static void writeLutFileHeader(const string& path)
 {
     copyrightSpan_t span = getCurrentCopyright(path);
 
-    writeFileCopyright(path, span);
+    writeFileCopyrightAndLicense(path, span);
 
     ofstream outFile(path, ofstream::app);
-    outFile << "#ifdef __ghs__" << endl << "#include \"product.h\"" << endl << "#include \"types.h\"" << endl << "#else // __ghs__" << endl << "#include <cstdint>" << endl << "#endif // __ghs__" << endl << endl;
+    outFile << "#include <cstdint>" << endl << endl;
     
     outFile << "#include \"activation.hpp\"" << endl;
     for(int i = 0; i < endActivation;++i)
