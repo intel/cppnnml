@@ -47,43 +47,4 @@ namespace tinymind {
             return result;
         }
     };
-#ifndef __ghs__
-    template<>
-    struct Constants<float>
-    {
-        static float one()
-        {
-            return 1.0f;
-        }
-
-        static float negativeOne()
-        {
-            return -1.0f;
-        }
-
-        static float zero()
-        {
-            return 0.0f;
-        }
-    };
-
-    template<>
-    struct Constants<double>
-    {
-        static double one()
-        {
-            return 1.0;
-        }
-
-        static double negativeOne()
-        {
-            return -1.0;
-        }
-
-        static double zero()
-        {
-            return 0.0;
-        }
-    };
-#endif // __ghs__
 }
