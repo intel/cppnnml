@@ -21,7 +21,7 @@
 *'/
 
 @startuml
-title Simple Feed Forward Neural Network
+title Simple Feed Forward Neural Network Training
 Application -> NeuralNet : feedForward
 NeuralNet -> InputLayerType : feedForward
 NeuralNet -> HiddenLayerFeedForwardManagerType : feedForward
@@ -41,5 +41,4 @@ Application -> TransferFunctionsPolicy : train = !isWithinZeroTolerance(error)
 alt train
 Application -> NeuralNet : trainNetwork
 end
-Application -> NeuralNet : learnedValues = getLearnedValues
 @enduml
