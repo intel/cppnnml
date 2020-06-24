@@ -25,6 +25,15 @@
 class QTypeChooser {
 }
 
+class FullWidthFieldTypeChooser {
+}
+
+class MultiplicationResultFullWidthFieldTypeChooser {
+}
+
+class DivisionResultFullWidthFieldTypeChooser {
+}
+
 class QValueRoundingPolicy {
 {static} T round(const T& value) 
 }
@@ -41,6 +50,11 @@ class QValue {
 }
 
 QValue -- QTypeChooser
+QTypeChooser -- FullWidthFieldTypeChooser
+QTypeChooser -- MultiplicationResultFullWidthFieldTypeChooser
+QTypeChooser -- DivisionResultFullWidthFieldTypeChooser
+MultiplicationResultFullWidthFieldTypeChooser -- FullWidthFieldTypeChooser
+DivisionResultFullWidthFieldTypeChooser -- FullWidthFieldTypeChooser
 QValue -- QValueRoundingPolicy
 QValue -- SignExtender
 QValue -- ShiftPolicy
