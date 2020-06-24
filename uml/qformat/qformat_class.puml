@@ -46,6 +46,18 @@ class ShiftPolicy {
 {static} ResultType shfit(const SourceType& value) 
 }
 
+class NoShiftPolicy {
+{static} ResultType shfit(const SourceType& value) 
+}
+
+class ShiftLeftPolicy {
+{static} ResultType shfit(const SourceType& value) 
+}
+
+class ShiftRightPolicy {
+{static} ResultType shfit(const SourceType& value) 
+}
+
 class QValue {
 }
 
@@ -58,5 +70,8 @@ DivisionResultFullWidthFieldTypeChooser -- FullWidthFieldTypeChooser
 QValue -- QValueRoundingPolicy
 QValue -- SignExtender
 QValue -- ShiftPolicy
+ShiftPolicy -- NoShiftPolicy
+ShiftPolicy -- ShiftLeftPolicy
+ShiftPolicy -- ShiftRightPolicy
 
 @enduml
