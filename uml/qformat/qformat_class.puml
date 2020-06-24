@@ -22,6 +22,8 @@
 
 @startuml qformat_class
 
+title QValue
+
 class QTypeChooser {
 }
 
