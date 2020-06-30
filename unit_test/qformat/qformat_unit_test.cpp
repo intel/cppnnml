@@ -199,10 +199,10 @@ BOOST_AUTO_TEST_CASE(test_case_addition)
     BOOST_TEST(static_cast<SignedQ1_15Type::FullWidthValueType>(0x7FFF) == Q4.getValue());
 
     Q8 = Q6 + Q7;
-    BOOST_TEST(static_cast<SignedQ1_15Type::FullWidthValueType>(0x0) == Q8.getValue());
+    BOOST_TEST(static_cast<SignedQ8_24Type::FullWidthValueType>(0x0) == Q8.getValue());
 
     Q8 = Q7 + Q9;
-    BOOST_TEST(static_cast<SignedQ1_15Type::FullWidthValueType>(0x180) == Q8.getValue());
+    BOOST_TEST(static_cast<SignedQ8_24Type::FullWidthValueType>(0x180) == Q8.getValue());
 
     Q13 = Q10 + Q11;
     BOOST_TEST(static_cast<SignedQ8_24Type::FullWidthValueType>(0x0) == Q13.getValue());
