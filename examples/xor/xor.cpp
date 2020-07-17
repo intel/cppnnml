@@ -91,6 +91,8 @@ static void generateXorTrainingValue(ValueType& x, ValueType& y, ValueType& z)
     z = ValueType(result, 0);
 }
 
+static NeuralNetworkType testNeuralNet;
+
 int main(const int argc, char *argv[])
 {
     using namespace std;
@@ -99,27 +101,26 @@ int main(const int argc, char *argv[])
 
     char const* const path = "nn_fixed_xor.txt";
     ofstream results(path);
-    NeuralNetworkType nn;
     ValueType values[NeuralNetworkType::NumberOfInputLayerNeurons];
     ValueType output[NeuralNetworkType::NumberOfOutputLayerNeurons];
     ValueType learnedValues[NeuralNetworkType::NumberOfInputLayerNeurons];
     ValueType error;
 
-    tinymind::NetworkPropertiesFileManager<NeuralNetworkType>::writeHeader(nn, results);
+    tinymind::NetworkPropertiesFileManager<NeuralNetworkType>::writeHeader(testNeuralNet, results);
 
     for (auto i = 0; i < TRAINING_ITERATIONS; ++i)
     {
         generateXorTrainingValue(values[0], values[1], output[0]);
 
-        nn.feedForward(&values[0]);
-        error = nn.calculateError(&output[0]);
+        testNeuralNet.feedForward(&values[0]);
+        error = testNeuralNet.calculateError(&output[0]);
         if (!NeuralNetworkType::NeuralNetworkTransferFunctionsPolicy::isWithinZeroTolerance(error))
         {
-            nn.trainNetwork(&output[0]);
+            testNeuralNet.trainNetwork(&output[0]);
         }
-        nn.getLearnedValues(&learnedValues[0]);
+        testNeuralNet.getLearnedValues(&learnedValues[0]);
 
-        tinymind::NetworkPropertiesFileManager<NeuralNetworkType>::storeNetworkProperties(nn, results, &output[0], &learnedValues[0]);
+        tinymind::NetworkPropertiesFileManager<NeuralNetworkType>::storeNetworkProperties(testNeuralNet, results, &output[0], &learnedValues[0]);
         results << error << std::endl;
     }
 
