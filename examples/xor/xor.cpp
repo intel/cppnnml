@@ -39,8 +39,6 @@ static constexpr size_t NUMBER_OF_FRACTIONAL_BITS = 8;
 typedef tinymind::QValue<NUMBER_OF_FIXED_BITS, NUMBER_OF_FRACTIONAL_BITS, true> ValueType;
 // typedef the underlying full-width representation type
 typedef typename ValueType::FullWidthValueType FullWidthValueType;
-// error limit when training is required
-static constexpr FullWidthValueType ERROR_LIMIT = (1 << (ValueType::NumberOfFractionalBits - 6));
 // Neural network architecture
 static constexpr size_t NUMBER_OF_INPUTS = 2;
 static constexpr size_t NUMBER_OF_HIDDEN_LAYERS = 1;
