@@ -21,6 +21,7 @@
 */
 
 
+#include <ostream>
 #include "xornet.h"
 
 NeuralNetworkType testNeuralNet;
