@@ -1964,4 +1964,157 @@ BOOST_AUTO_TEST_CASE(test_case_fixedpoint_nn_sigmoid_xor)
     testFixedPointNeuralNetwork_Xor(nn, path, 75000);
 }
 
+BOOST_AUTO_TEST_CASE(test_poker_hand_classifier)
+{
+
+    #define RANDOMIZE_CLASSIFIER_DATA 0
+ 
+    static constexpr size_t NUMBER_OF_INPUTS = 2;
+    static constexpr size_t NUMBER_OF_HIDDEN_LAYERS = 1;
+    static constexpr size_t NUMBER_OF_NEURONS_PER_HIDDEN_LAYER = 10;
+    static constexpr size_t NUMBER_OF_OUTPUTS = 10;
+    static constexpr size_t NUMBER_OF_CLASSIFIER_TRAINING_ITERATIONS = 1;
+    static constexpr size_t TRAINABLE = true;
+    static constexpr size_t BATCH_SIZE = 1;
+    static constexpr bool HAS_RECURRENT_LAYERS = false;
+    static constexpr bool HAS_GATED_RECURRENT_UNITS = false;
+    static constexpr tinymind::hiddenLayerConfiguration_e HIDDEN_LAYER_CONFIG = tinymind::NonRecurrentHiddenLayerConfig;
+    static constexpr size_t RECURRENT_CONNECTIONS_DEPTH = 0;
+
+    static const ClassifierValueType MAX_SUIT(4,0);
+    static const ClassifierValueType MAX_CARD(13,0);
+
+    typedef tinymind::FixedPointTransferFunctions<
+                                                    ClassifierValueType,
+                                                    UniformRealRandomNumberGenerator<ClassifierValueType>,
+                                                    tinymind::SigmoidActivationPolicy<ClassifierValueType>,
+                                                    tinymind::SoftmaxActivationPolicy<ClassifierValueType>,
+                                                    NUMBER_OF_OUTPUTS,
+                                                    tinymind::DefaultNetworkInitializer<ClassifierValueType>,
+                                                    tinymind::CrossEntropyLossCalculator<ClassifierValueType, NUMBER_OF_OUTPUTS>
+                                                    > TransferFunctionsType;
+    typedef tinymind::MultilayerPerceptron<
+                                            ClassifierValueType,
+                                            NUMBER_OF_INPUTS,
+                                            NUMBER_OF_HIDDEN_LAYERS,
+                                            NUMBER_OF_NEURONS_PER_HIDDEN_LAYER,
+                                            NUMBER_OF_OUTPUTS,
+                                            TransferFunctionsType,
+                                            TRAINABLE,
+                                            BATCH_SIZE,
+                                            HAS_RECURRENT_LAYERS,
+                                            HIDDEN_LAYER_CONFIG,
+                                            RECURRENT_CONNECTIONS_DEPTH,
+                                            tinymind::outputLayerConfiguration_e::ClassifierOutputLayerConfiguration> PokerHandClassificationNetworkType;
+
+    PokerHandClassificationNetworkType nn;
+    classifierValues_t trainingData;
+    ClassifierValueType inputs[NUMBER_OF_INPUTS];
+    ClassifierValueType classifications[NUMBER_OF_OUTPUTS];
+    ClassifierValueType learnedValues[NUMBER_OF_OUTPUTS];
+    ClassifierValueType error;
+    ClassifierValueType learnedValue;
+    char buffer[256];
+    size_t inputIndex;
+    size_t outputIndex;
+    size_t learnedValueIndex;
+    size_t maxLearnedValueIndex;
+    bool suit = true;
+    std::string trainingDataFilePath("poker-hand-training-true.data");
+    std::string resultsDataFilePath("poker-hand-classification-results.txt");
+    std::ifstream trainingDataFile(trainingDataFilePath);
+    std::ofstream resultsDataFile(resultsDataFilePath);
+
+    if(!trainingDataFile.is_open())
+    {
+        std::cerr << "Failed to open training data file: " << trainingDataFilePath << std::endl;
+        return;
+    }
+
+    if(!resultsDataFile.is_open())
+    {
+        std::cerr << "Failed to open results data file: " << resultsDataFilePath << std::endl;
+        return;
+    }
+
+    std::cout << "PokerNet!" << std::endl;
+    std::cout << "Training data file: " << trainingDataFilePath << std::endl;
+    std::cout << "Results data file: " << resultsDataFilePath << std::endl;
+
+    std::cout << "Reading training data file..." << std::endl;
+    while(!trainingDataFile.eof())
+    {
+        trainingDataFile.getline(buffer, 256);
+        if(strlen(buffer))
+        {
+            getClassifierTrainingValues(buffer, trainingData);
+        }
+    }
+    std::cout << "Reading training data file done." << std::endl;
+    std::cout << "Training neural network.." << std::endl;
+    for(size_t trainingIteration = 0;trainingIteration < NUMBER_OF_CLASSIFIER_TRAINING_ITERATIONS;++trainingIteration)
+    {
+    #if RANDOMIZE_CLASSIFIER_DATA 
+        std::random_shuffle(trainingData.begin(), trainingData.end());
+    #endif // RANDOMIZE_CLASSIFIER_DATA 
+        inputIndex = 0;
+        for(size_t trainingDataIndex = 0;trainingDataIndex < trainingData.size();++trainingDataIndex)
+        {
+            classifierEntry_t& entry = trainingData.at(trainingDataIndex);
+            for(size_t entryIndex = 0;entryIndex < entry.size();++entryIndex)
+            {
+                if(NUMBER_OF_INPUTS == inputIndex)
+                {
+                    for(outputIndex = 0;outputIndex < NUMBER_OF_OUTPUTS;++outputIndex)
+                    {
+                        classifications[outputIndex].setValue(0,0);
+                    }
+                    outputIndex = static_cast<size_t>(entry.at(entryIndex));
+                    classifications[outputIndex].setValue(1,0);
+                    suit = true;
+                    nn.feedForward(&inputs[0]);
+                    error = nn.calculateError(&classifications[0]);
+                    if (!PokerHandClassificationNetworkType::NeuralNetworkTransferFunctionsPolicy::isWithinZeroTolerance(error))
+                    {
+                        nn.trainNetwork(&classifications[0]);
+                    }
+                    nn.getLearnedValues(&learnedValues[0]);
+                    learnedValue.setValue(0,0);
+                    maxLearnedValueIndex = 0;
+                    for(learnedValueIndex = 0;learnedValueIndex < NUMBER_OF_OUTPUTS;++learnedValueIndex)
+                    {
+                        if(learnedValues[learnedValueIndex] > learnedValue)
+                        {
+                            learnedValue = learnedValues[learnedValueIndex];
+                            maxLearnedValueIndex = learnedValueIndex;
+                        }
+                    }
+                    resultsDataFile << outputIndex << "," << maxLearnedValueIndex << ",";
+                    for(learnedValueIndex = 0;learnedValueIndex < NUMBER_OF_OUTPUTS;++learnedValueIndex)
+                    {
+                        resultsDataFile << learnedValues[learnedValueIndex].getValue() << ",";
+                    }
+                    resultsDataFile << error.getValue() << std::endl;
+                    inputIndex = 0;
+                }
+                else
+                {
+                    inputs[inputIndex].setValue(entry.at(entryIndex), 0);
+                    if(suit)
+                    {
+                        inputs[inputIndex] /= MAX_SUIT;
+                    }
+                    else
+                    {
+                        inputs[inputIndex] /= MAX_CARD;
+                    }
+                    suit = !suit;
+                    ++inputIndex;
+                }
+            }
+        }
+    }
+    std::cout << "Neural network training complete." << std::endl;
+}
+
 BOOST_AUTO_TEST_SUITE_END()
