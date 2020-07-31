@@ -1964,6 +1964,36 @@ BOOST_AUTO_TEST_CASE(test_case_fixedpoint_nn_sigmoid_xor)
     testFixedPointNeuralNetwork_Xor(nn, path, 75000);
 }
 
+typedef tinymind::QValue<16, 16, true, tinymind::RoundUpPolicy> ClassifierValueType;
+typedef typename ClassifierValueType::FixedPartFieldType ClassifierFixedPartFieldType;
+typedef std::vector<ClassifierFixedPartFieldType> classifierEntry_t;
+typedef std::vector<classifierEntry_t> classifierValues_t;
+
+static void getClassifierTrainingValues(char* buffer, classifierValues_t& trainingData)
+{
+    classifierEntry_t entry;
+    ClassifierFixedPartFieldType value;
+    char* nextToken;
+#ifdef __unix__
+    char* token = strtok_r(buffer, ",", &nextToken);
+#else
+    char* token = strtok_s(buffer, ",", &nextToken);
+#endif
+
+    while(token != NULL)
+    {
+        value = static_cast<ClassifierFixedPartFieldType>(atoi(token));
+        entry.push_back(value);
+#ifdef __unix__
+        token = strtok_r(NULL, ",", &nextToken);
+#else
+        token = strtok_s(NULL, ",", &nextToken);
+#endif
+    }
+    assert(entry.size() == 11);
+    trainingData.push_back(entry);
+}
+
 BOOST_AUTO_TEST_CASE(test_poker_hand_classifier)
 {
 
