@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
+#include <new>
 
 #include "qformat.hpp"
 #include "qlearn.hpp"
