@@ -69,7 +69,7 @@ int main(const int argc, char *argv[])
     string logEntry;
     ofstream logFile;
 
-    logFile.open("maze.txt");
+    logFile.open("maze_training.txt");
     if(!logFile.is_open())
     {
         cerr << "Failed to open output file." << endl;
@@ -147,6 +147,14 @@ int main(const int argc, char *argv[])
         }
 
         logFile << logEntry << endl;
+    }
+
+    logFile.close();
+    logFile.open("maze_test.txt");
+    if(!logFile.is_open())
+    {
+        cerr << "Failed to open output file." << endl;
+        return -1;
     }
 
     // trainging is done, now run some test iterations

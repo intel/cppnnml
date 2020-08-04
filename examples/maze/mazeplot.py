@@ -31,16 +31,30 @@ if __name__ == '__main__':
     dataPath = sys.argv[1]
     assert(os.path.exists(dataPath))
 
+    fileName = dataPath.split(os.path.sep)[-1]
+
     startStateToDataDict = {}
 
     with open(dataPath) as f:
         line = f.readline()
-        s = line.split(',')
-        startState = int(s[0], 10)
-        if not startState in startStateToDataDict:
-            startStateToDataDict[startState] = []
-        moves = []
-        for i in len(s):
-            moves.append(int(s[i], 10))
+        while(line):
+            s = line.strip().split(',')
+            startState = int(s[0], 10)
+            if not startState in startStateToDataDict.keys():
+                startStateToDataDict[startState] = []
+            moves = []
+            for i in range(1, len(s) - 1):
+                moves.append(int(s[i], 10))
 
-        startStateToDataDict[startState].append(moves)
+            startStateToDataDict[startState].append(moves)
+            line = f.readline()
+
+    for startState in startStateToDataDict.keys():
+        pyplot.figure()
+        pyplot.title("%s\nState state = %d" % (fileName, startState))
+        for line in startStateToDataDict[startState]:
+            data = [startState] + line
+            pyplot.plot(range(len(data)), data, '-D')
+
+    pyplot.show()
+
