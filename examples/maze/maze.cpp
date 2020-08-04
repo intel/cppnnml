@@ -105,6 +105,53 @@ int main(const int argc, char *argv[])
     // randomly search the maze for the reward, keep updating the Q table
     for (auto i = 0; i < 500; ++i)
     {
+        // after 400 random iterations, scale down the randomness on every iteration
+        if (i >= 400)
+        {
+            if (randomActionDecisionPoint > 0)
+            {
+                --randomActionDecisionPoint;
+                qLearner.getEnvironment().setRandomActionDecisionPoint(randomActionDecisionPoint);
+            }
+        }
+
+        qLearner.startNewEpisode();
+
+        state = rand() % NUMBER_OF_STATES;
+        cout << "*** starting in state " << (int)state << " ***" << endl;
+        logEntry.clear();
+        logEntry += to_string(state);
+        logEntry += ",";
+        action = qLearner.takeAction(state);
+        cout << "take action " << (int)action << endl;
+        logEntry += to_string(action);
+        logEntry += ",";
+        experience.state = state;
+        experience.action = action;
+        experience.reward = qLearner.getEnvironment().getRewardForStateAndAction(experience.state, experience.action);
+        experience.newState =  static_cast<state_t>(experience.action);
+        qLearner.updateFromExperience(experience);
+
+        // look until we find the cheese
+        while (qLearner.getState() != qLearner.getEnvironment().getGoalState())
+        {
+            action = qLearner.takeAction(qLearner.getState());
+            cout << "take action " << (int)action << endl;
+            logEntry += to_string(action);
+            logEntry += ",";
+            experience.state = qLearner.getState();
+            experience.action = action;
+            experience.reward = qLearner.getEnvironment().getRewardForStateAndAction(experience.state, experience.action);
+            experience.newState =  static_cast<state_t>(experience.action);
+            qLearner.updateFromExperience(experience);
+        }
+
+        logFile << logEntry << endl;
+    }
+
+    // trainging is done, now run some test iterations
+    for (auto i = 0; i < 100; ++i)
+    {
         qLearner.startNewEpisode();
 
         state = rand() % NUMBER_OF_STATES;
