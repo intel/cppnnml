@@ -22,6 +22,6 @@
 
 #include "mazelearner.h"
 
-static const QValueType learningRate = (QValueType(1,0) / QValueType(5,0));
-static const QValueType discountFactor = (QValueType(8,0) / QValueType(10,0));
-QLearnerType qLearner(learningRate, discountFactor, 100);
+#define LEARNING_RATE (QValueType(1,0) / QValueType(5,0))
+#define DISCOUNT_FACTOR (QValueType(8,0) / QValueType(10,0))
+QLearnerType qLearner(LEARNING_RATE, DISCOUNT_FACTOR, 100);
