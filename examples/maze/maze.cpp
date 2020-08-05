@@ -58,7 +58,6 @@ The paths out of the maze:
 #include "mazelearner.h"
 
 extern QLearnerType qLearner;
-extern size_t randomActionDecisionPoint;
 
 int main(const int argc, char *argv[])
 {
@@ -68,6 +67,7 @@ int main(const int argc, char *argv[])
     typename MazeEnvironmentType::ParentType::experience_t experience;
     string logEntry;
     ofstream logFile;
+    size_t randomActionDecisionPoint;
 
     logFile.open("maze_training.txt");
     if(!logFile.is_open())
@@ -99,7 +99,7 @@ int main(const int argc, char *argv[])
         }
     }
 
-    qLearner.getEnvironment().setRandomActionDecisionPoint(randomActionDecisionPoint);
+    qLearner.getEnvironment().setRandomActionDecisionPoint(100);
     qLearner.getEnvironment().setGoalState(5);
 
     // randomly search the maze for the reward, keep updating the Q table
@@ -108,6 +108,7 @@ int main(const int argc, char *argv[])
         // after 400 random iterations, scale down the randomness on every iteration
         if (i >= 400)
         {
+            randomActionDecisionPoint = qLearner.getEnvironment().getRandomActionDecisionPoint();
             if (randomActionDecisionPoint > 0)
             {
                 --randomActionDecisionPoint;

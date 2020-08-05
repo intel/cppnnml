@@ -24,5 +24,4 @@
 
 static const QValueType learningRate = (QValueType(1,0) / QValueType(5,0));
 static const QValueType discountFactor = (QValueType(8,0) / QValueType(10,0));
-size_t randomActionDecisionPoint = 100;
-QLearnerType qLearner(learningRate, discountFactor, randomActionDecisionPoint);
+QLearnerType qLearner(learningRate, discountFactor, 100);
