@@ -230,7 +230,7 @@ template<typename StateType, typename ActionType, typename ValueType, size_t Num
 const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, QLearningRewardPolicy, QLearningPolicy>::EnvironmentInvalidActionValue = ValueType(-1, 0);
 
 // unsigned Q-format type to use as reward
-typedef tinymind::QValue<8,8,false> QValueType;
+typedef tinymind::QValue<16,16,false> QValueType;
 
 // define the maze environment type
 typedef MazeEnvironment<state_t, action_t, QValueType, NUMBER_OF_STATES, NUMBER_OF_ACTIONS> MazeEnvironmentType;
