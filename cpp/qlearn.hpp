@@ -179,8 +179,8 @@ namespace tinymind {
 
         static const size_t EnvironmentNumberOfStates = NumberOfStates;
         static const size_t EnvironmentNumberOfActions = NumberOfActions;
-        static const StateType EnvironmentInvalidState = limits<StateType>::max;
-        static const ActionType EnvironmentInvalidAction = limits<ActionType>::max;
+        static const StateType EnvironmentInvalidState = tinymind::limits<StateType>::max;
+        static const ActionType EnvironmentInvalidAction = tinymind::limits<ActionType>::max;
 
         struct experience_t
         {
@@ -637,8 +637,8 @@ namespace tinymind {
 
         static_assert(NumberOfStates > 1, "Invalid number of states.");
         static_assert(NumberOfActions > 1, "Invalid number of actions.");
-        static_assert((limits<StateType>::max > (NumberOfStates - 1)), "State type too small to hold number of states. Max value reserved for invalid state.");
-        static_assert((limits<ActionType>::max > (NumberOfActions - 1)), "Action type too small to hold number of actions. Max value reserved for invalid action.");
+        static_assert((tinymind::limits<StateType>::max > (NumberOfStates - 1)), "State type too small to hold number of states. Max value reserved for invalid state.");
+        static_assert((tinymind::limits<ActionType>::max > (NumberOfActions - 1)), "Action type too small to hold number of actions. Max value reserved for invalid action.");
         static_assert(IsSigned<StateType>::result == false, "Must use an unsigned type to represent states.");
         static_assert(IsSigned<ActionType>::result == false, "Must use an unsigned type to represent actions.");
     };
