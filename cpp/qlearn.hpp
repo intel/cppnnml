@@ -164,7 +164,7 @@ namespace tinymind {
                 size_t NumberOfStates,
                 size_t NumberOfActions,
                 template<typename> class QLearningRandomNumberPolicy,
-                template<typename, typename, typename, size_t, size_t> class QLearningRewardPolicy = QTableRewardPolicy,
+                class RewardPolicy = QTableRewardPolicy<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions>,
                 template<typename> class QLearningPolicy = DefaultLearningPolicy
             >
     class QLearningEnvironment
@@ -174,7 +174,6 @@ namespace tinymind {
         typedef ActionType EnvironmentActionType;
         typedef ValueType EnvironmentValueType;
         typedef QLearningRandomNumberPolicy<ActionType> RandomNumberPolicy;
-        typedef QLearningRewardPolicy<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions> RewardPolicy;
         typedef QLearningPolicy<ValueType> LearningPolicy;
 
         static const size_t EnvironmentNumberOfStates = NumberOfStates;
