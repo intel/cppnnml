@@ -108,12 +108,12 @@ template<   typename StateType,
             typename ValueType,
             size_t NumberOfStates,
             size_t NumberOfActions,
-            class QLearningRewardPolicy,
+            typename RewardPolicyType,
             template<typename> class QLearningPolicy = tinymind::DefaultLearningPolicy
         >
-struct MazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy, QLearningRewardPolicy>
+struct MazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy>
 {
-    typedef tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy, QLearningRewardPolicy> ParentType;
+    typedef tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy> ParentType;
     static const size_t EnvironmentNumberOfStates = ParentType::EnvironmentNumberOfStates;
     static const size_t EnvironmentNumberOfActions = ParentType::EnvironmentNumberOfActions;
     static const size_t EnvironmentInvalidState = ParentType::EnvironmentInvalidState;
@@ -135,6 +135,11 @@ struct MazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t
     size_t getNextStateForStateActionPair(const state_t state, const action_t action) const
     {
         return action;
+    }
+
+    ValueType getRewardForStateAndAction(const StateType state, const ActionType action) const
+    {
+        return this->mRewardPolicy.getRewardForStateAndAction(state, action);
     }
 
     size_t getValidActionsForState(const state_t state, action_t* pActions) const
@@ -167,6 +172,11 @@ struct MazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t
         }
     }
 
+    void setRewardForStateAndAction(const StateType state, const ActionType action, const ValueType& reward)
+    {
+        this->mRewardPolicy.setRewardForStateAndAction(state, action, reward);
+    }
+
     void takeAction(const typename ParentType::experience_t& experience)
     {
         this->mExperience = experience;
@@ -174,23 +184,25 @@ struct MazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t
     
     typename ParentType::experience_t mExperience;
     StateType mGoalState;
+private:
+    RewardPolicyType mRewardPolicy;
 };
 
-template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, class QLearningRewardPolicy, template<typename> class QLearningPolicy>
-const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, QLearningRewardPolicy, QLearningPolicy>::EnvironmentNoRewardValue = ValueType(0);
+template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType, template<typename> class QLearningPolicy>
+const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::EnvironmentNoRewardValue = ValueType(0);
 
-template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, class QLearningRewardPolicy, template<typename> class QLearningPolicy>
-const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, QLearningRewardPolicy, QLearningPolicy>::EnvironmentInvalidActionValue = ValueType(-1, 0);
+template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType,template<typename> class QLearningPolicy>
+const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::EnvironmentInvalidActionValue = ValueType(-1, 0);
 
-template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, class QLearningRewardPolicy, template<typename> class QLearningPolicy>
-const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, QLearningRewardPolicy, QLearningPolicy>::ONE = ValueType(1,0);
+template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType,template<typename> class QLearningPolicy>
+const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::ONE = ValueType(1,0);
 
 #define NUMBER_OF_STATES 6
 #define NUMBER_OF_ACTIONS 6
 
 typedef tinymind::QValue<16,16,false> QValueType;
-typedef tinymind::QTableRewardPolicy<state_t, action_t, QValueType,NUMBER_OF_STATES, NUMBER_OF_ACTIONS> RewardPolicyType;
-typedef MazeEnvironment<state_t, action_t, QValueType, NUMBER_OF_STATES, NUMBER_OF_ACTIONS, RewardPolicyType> MazeEnvironmentType;
+typedef tinymind::QTableRewardPolicy<state_t, action_t, QValueType,NUMBER_OF_STATES, NUMBER_OF_ACTIONS> QTableRewardPolicyType;
+typedef MazeEnvironment<state_t, action_t, QValueType, NUMBER_OF_STATES, NUMBER_OF_ACTIONS, QTableRewardPolicyType> MazeEnvironmentType;
 typedef tinymind::QLearner<MazeEnvironmentType> QLearnerType;
 
 typedef tinymind::NullRewardPolicy<state_t, action_t, QValueType, NUMBER_OF_STATES, NUMBER_OF_ACTIONS> NullRewardPolicyType;

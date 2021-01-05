@@ -25,6 +25,7 @@
 #include "constants.hpp"
 #include "limits.hpp"
 #include "signed.hpp"
+#include "neuralnet.hpp"
 
 namespace tinymind {
     template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions>
@@ -164,7 +165,6 @@ namespace tinymind {
                 size_t NumberOfStates,
                 size_t NumberOfActions,
                 template<typename> class QLearningRandomNumberPolicy,
-                class RewardPolicy = QTableRewardPolicy<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions>,
                 template<typename> class QLearningPolicy = DefaultLearningPolicy
             >
     class QLearningEnvironment
@@ -288,11 +288,6 @@ namespace tinymind {
             return this->mRandomNumberPolicy.getRandomActionDecisionPoint();
         }
 
-        ValueType getRewardForStateAndAction(const StateType state, const ActionType action) const
-        {
-            return this->mRewardPolicy.getRewardForStateAndAction(state, action);
-        }
-
         void setDiscountFactor(const ValueType& discountFactor)
         {
             this->mLearningPolicy.setDiscountFactor(discountFactor);
@@ -306,11 +301,6 @@ namespace tinymind {
         void setRandomActionDecisionPoint(const size_t randomActionDecisionPoint)
         {
             this->mRandomNumberPolicy.setRandomActionDecisionPoint(randomActionDecisionPoint);
-        }
-
-        void setRewardForStateAndAction(const StateType state, const ActionType action, const ValueType& reward)
-        {
-            this->mRewardPolicy.setRewardForStateAndAction(state, action, reward);
         }
 
         bool shouldChooseRandomAction()
@@ -336,7 +326,6 @@ namespace tinymind {
         }
     protected:
         RandomNumberPolicy mRandomNumberPolicy;
-        RewardPolicy mRewardPolicy;
         LearningPolicy mLearningPolicy;
     private:
         unsigned char mActionsBuffer[sizeof(ActionType) * NumberOfActions];
@@ -465,8 +454,37 @@ namespace tinymind {
         unsigned char mQTableBuffer[sizeof(ValueType) * NumberOfStates * NumberOfActions];
     };
 
+    template<typename EnvironmentType, typename NeuralNetworkType>
+    class QValueNeuralNetworkPolicy
+    {
+    public:
+        typedef typename EnvironmentType::EnvironmentStateType StateType;
+        typedef typename EnvironmentType::EnvironmentActionType ActionType;
+        typedef typename EnvironmentType::EnvironmentValueType ValueType;
+
+        static const size_t NumberOfStates = EnvironmentType::EnvironmentNumberOfStates;
+        static const size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
+
+        QValueNeuralNetworkPolicy() : mIterations(0)
+        {
+        }
+
+        ValueType getQValue(const StateType state, const ActionType action) const
+        {
+            return 0;
+        }
+
+        void setQValue(const StateType state, const ActionType action, const ValueType& value)
+        {
+        }
+    private:
+        size_t mIterations;
+        NeuralNetworkType mNeuralNet;
+        NeuralNetworkType mTargetNeuralNet;
+    };
+
     template<   typename EnvironmentType,
-                template<typename> class QLearnerQValuePolicy = QValueTablePolicy,
+                typename QValuePolicy = QValueTablePolicy<EnvironmentType>,
                 template<typename, typename> class QLearnerStateToActionPolicy = ArgMaxPolicy
             >
     class QLearner
@@ -476,7 +494,6 @@ namespace tinymind {
         typedef typename EnvironmentType::EnvironmentActionType ActionType;
         typedef typename EnvironmentType::EnvironmentValueType ValueType;
         typedef typename EnvironmentType::experience_t experience_t;
-        typedef QLearnerQValuePolicy<EnvironmentType> QValuePolicy;
         typedef QLearnerStateToActionPolicy<EnvironmentType, QValuePolicy> StateToActionPolicy;
 
         static const size_t NumberOfStates = EnvironmentType::EnvironmentNumberOfStates;
