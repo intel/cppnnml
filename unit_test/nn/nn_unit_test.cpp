@@ -1946,6 +1946,39 @@ BOOST_AUTO_TEST_CASE(test_case_floatingpoint_2_hidden_nn_relu_xor)
     testFloatingPointNN_Xor(nn, path, 100000);
 }
 
+BOOST_AUTO_TEST_CASE(test_case_floatingpoint_2_hidden_nn_relu_xor_copy)
+{
+    static constexpr size_t NUMBER_OF_INPUTS = 2;
+    static constexpr size_t NUMBER_OF_HIDDEN_LAYERS = 2;
+    static constexpr size_t NUMBER_OF_NEURONS_PER_HIDDEN_LAYER = 5;
+    static constexpr size_t NUMBER_OF_OUTPUTS = 1;
+    typedef double ValueType;
+    typedef FloatingPointTransferFunctions<
+                                            ValueType,
+                                            UniformRealRandomNumberGenerator,
+                                            tinymind::ReluActivationPolicy,
+                                            tinymind::TanhActivationPolicy> TransferFunctionsType;
+    typedef tinymind::MultilayerPerceptron< ValueType,
+                                            NUMBER_OF_INPUTS,
+                                            NUMBER_OF_HIDDEN_LAYERS,
+                                            NUMBER_OF_NEURONS_PER_HIDDEN_LAYER,
+                                            NUMBER_OF_OUTPUTS,
+                                            TransferFunctionsType> FloatingPointMultiLayerPerceptronNetworkType;
+    srand(static_cast<unsigned int>(time(NULL)));
+    char const* const path = "nn_float_2_hidden_relu_xor.txt";
+    char const* const pathCopy = "nn_float_2_hidden_relu_xor_copy.txt";
+    FloatingPointMultiLayerPerceptronNetworkType nn;
+    FloatingPointMultiLayerPerceptronNetworkType nnCopy;
+
+    nn.setLearningRate(0.005);
+    nn.setAccelerationRate(0.03);
+    nn.setMomentumRate(0.16);
+
+    testFloatingPointNN_Xor(nn, path, 100000);
+    nnCopy.setWeights(nn);
+    testFloatingPointNN_Xor(nnCopy, pathCopy, 100000);
+}
+
 BOOST_AUTO_TEST_CASE(test_case_fixedpoint_2_hidden_nn_relu_xor_no_train)
 {
     static constexpr size_t NUMBER_OF_INPUTS = 2;
