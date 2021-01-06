@@ -2973,6 +2973,60 @@ namespace tinymind {
             this->mOutputLayer.setWeightForNeuronAndConnection(neuron, connection, weight);
         }
 
+        void setWeights(const NeuralNetworkType& other)
+        {
+            ValueType weightValue;
+            int       hiddenLayer = 0;
+
+            for(size_t i = 0; i < NumberOfInputLayerNeurons; ++i)
+            {
+                for(size_t h = 0; h < NumberOfHiddenLayerNeurons; ++h)
+                {
+                    weightValue = other.getInputLayerWeightForNeuronAndConnection(i, h);
+                    this->setInputLayerWeightForNeuronAndConnection(i, h, weightValue);
+                }
+            }
+
+            for(size_t h = 0; h < NumberOfHiddenLayerNeurons; ++h)
+            {
+                weightValue = other.getInputLayerBiasNeuronWeightForConnection(h);
+                this->setInputLayerBiasWeightForConnection(h, weightValue);
+            }
+
+            for(;hiddenLayer < (NumberOfHiddenLayers - 1);++hiddenLayer)
+            {
+                for(size_t h = 0; h < NumberOfHiddenLayerNeurons; ++h)
+                {
+                    for(size_t h1 = 0; h1 < NumberOfHiddenLayerNeurons; ++h1)
+                    {
+                        weightValue = other.getHiddenLayerWeightForNeuronAndConnection(hiddenLayer, h, h1);
+                        this->setHiddenLayerWeightForNeuronAndConnection(hiddenLayer, h, h1, weightValue);
+                    }
+                }
+
+                for(size_t h1 = 0; h1 < NumberOfHiddenLayerNeurons; ++h1)
+                {
+                    weightValue = other.getHiddenLayerBiasNeuronWeightForConnection(hiddenLayer, h1);
+                    this->setHiddenLayerBiasNeuronWeightForConnection(hiddenLayer, h1, weightValue);
+                }
+            }
+
+            for(size_t hiddenNeuron = 0; hiddenNeuron < NumberOfHiddenLayerNeurons; ++hiddenNeuron)
+            {
+                for(size_t outputNeuron = 0; outputNeuron < NumberOfOutputLayerNeurons; ++outputNeuron)
+                {
+                    weightValue = other.getHiddenLayerWeightForNeuronAndConnection(hiddenLayer, hiddenNeuron, outputNeuron);
+                    this->setHiddenLayerWeightForNeuronAndConnection(hiddenLayer, hiddenNeuron, outputNeuron, weightValue);
+                }
+            }
+
+            for(size_t outputNeuron = 0; outputNeuron < NumberOfOutputLayerNeurons; ++outputNeuron)
+            {
+                weightValue = other.getHiddenLayerBiasNeuronWeightForConnection(hiddenLayer, outputNeuron);
+                this->setHiddenLayerBiasNeuronWeightForConnection(hiddenLayer, outputNeuron, weightValue);
+            }
+        }
+
         void trainNetwork(ValueType const* const targetValues)
         {
             this->mTrainingPolicy.trainNetwork(*this, targetValues);

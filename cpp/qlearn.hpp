@@ -402,16 +402,6 @@ namespace tinymind {
 
         QValueTablePolicy()
         {
-            size_t bufferIndex = 0;
-
-            for(StateType state = 0;state < NumberOfStates;++state)
-            {
-                for(ActionType action = 0;action < NumberOfActions;++action)
-                {
-                    new(&this->mQTableBuffer[bufferIndex]) ValueType(0);
-                    bufferIndex += sizeof(ValueType);
-                }
-            }
         }
 
         ValueType getQValue(const StateType state, const ActionType action) const
@@ -431,6 +421,22 @@ namespace tinymind {
             else
             {
                 return 0;
+            }
+        }
+
+        ValueType getFutureQValue(const StateType state, const ActionType action) const
+        {
+            return this->getQValue(state, action);
+        }
+
+        void init(const EnvironmentType& environment)
+        {
+            for(StateType state = 0;state < NumberOfStates;++state)
+            {
+                for(ActionType action = 0;action < NumberOfActions;++action)
+                {
+                    this->setQValue(state, action, environment.getInitialQTableValue());
+                }
             }
         }
 
@@ -454,7 +460,7 @@ namespace tinymind {
         unsigned char mQTableBuffer[sizeof(ValueType) * NumberOfStates * NumberOfActions];
     };
 
-    template<typename EnvironmentType, typename NeuralNetworkType>
+    template<typename EnvironmentType, typename NeuralNetworkType, size_t NumberOfIterationsBeforeTargetNetworkUpdate>
     class QValueNeuralNetworkPolicy
     {
     public:
@@ -471,11 +477,55 @@ namespace tinymind {
 
         ValueType getQValue(const StateType state, const ActionType action) const
         {
-            return 0;
+            ValueType learnedValues[NumberOfActions];
+
+            this->mNeuralNet.getLearnedValues(&learnedValues[0]);
+
+            return learnedValues[action];
+        }
+
+        ValueType getFutureQValue(const StateType state, const ActionType action) const
+        {
+            ValueType learnedValues[NumberOfActions];
+            ValueType *pInputs = EnvironmentType::getInputValues(state);
+
+            this->mTargetNeuralNet.feedForward(pInputs);
+            this->mTargetNeuralNet.getLearnedValues(&learnedValues[0]);
+
+            return learnedValues[action];
+        }
+
+        void init(const EnvironmentType& environment)
+        {
         }
 
         void setQValue(const StateType state, const ActionType action, const ValueType& value)
         {
+            ValueType *pInputs = EnvironmentType::getInputValues(state);
+            ValueType values[NumberOfActions];
+            ValueType error;
+
+            this->mNeuralNet.feedForward(pInputs);
+            this->mNeuralNet.getLearnedValues(&values[0]);
+
+            values[action] = value;
+
+            error = this->mNeuralNet.calculateError(&values[0]);
+            if (!NeuralNetworkType::NeuralNetworkTransferFunctionsPolicy::isWithinZeroTolerance(error))
+            {
+                this->mNeuralNet.trainNetwork(&values[0]);
+                ++mIterations;
+                if(mIterations >= NumberOfIterationsBeforeTargetNetworkUpdate)
+                {
+                    mIterations = 0;
+                    this->copyNetworkWeights();
+                }
+            }
+        }
+    private:
+        void copyNetworkWeights()
+        {
+            this->mTargetNeuralNet.setWeights(this->mNeuralNet);
         }
     private:
         size_t mIterations;
@@ -512,13 +562,7 @@ namespace tinymind {
                 bufferIndex += sizeof(ActionType);
             }
 
-            for(StateType state = 0;state < NumberOfStates;++state)
-            {
-                for(ActionType action = 0;action < NumberOfActions;++action)
-                {
-                    this->mQValuePolicy.setQValue(state, action, this->mEnvironment.getInitialQTableValue());
-                }
-            }
+            this->mQValuePolicy.init(this->mEnvironment);
         }
 
         EnvironmentType& getEnvironment()
@@ -617,7 +661,7 @@ namespace tinymind {
             }
             else
             {
-                qValue = this->mQValuePolicy.getQValue(state, action);
+                qValue = this->mQValuePolicy.getFutureQValue(state, action);
             }
 
             return qValue;
