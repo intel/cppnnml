@@ -2973,7 +2973,7 @@ namespace tinymind {
             this->mOutputLayer.setWeightForNeuronAndConnection(neuron, connection, weight);
         }
 
-        void setWeights(const NeuralNetworkType& other)
+        void setWeights(NeuralNetworkType& other)
         {
             ValueType weightValue;
             int       hiddenLayer = 0;
