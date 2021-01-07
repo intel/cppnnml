@@ -484,12 +484,14 @@ namespace tinymind {
             return learnedValues[action];
         }
 
-        ValueType getFutureQValue(const StateType state, const ActionType action) const
+        ValueType getFutureQValue(const StateType state, const ActionType action)
         {
             ValueType learnedValues[NumberOfActions];
-            ValueType *pInputs = EnvironmentType::getInputValues(state);
+            ValueType inputs[NumberOfStates];
 
-            this->mTargetNeuralNet.feedForward(pInputs);
+            EnvironmentType::getInputValues(state, &inputs[0]);
+
+            this->mTargetNeuralNet.feedForward(&inputs[0]);
             this->mTargetNeuralNet.getLearnedValues(&learnedValues[0]);
 
             return learnedValues[action];
@@ -501,11 +503,13 @@ namespace tinymind {
 
         void setQValue(const StateType state, const ActionType action, const ValueType& value)
         {
-            ValueType *pInputs = EnvironmentType::getInputValues(state);
             ValueType values[NumberOfActions];
+            ValueType inputs[NumberOfStates];
             ValueType error;
 
-            this->mNeuralNet.feedForward(pInputs);
+            EnvironmentType::getInputValues(state, &inputs[0]);
+
+            this->mNeuralNet.feedForward(&inputs[0]);
             this->mNeuralNet.getLearnedValues(&values[0]);
 
             values[action] = value;

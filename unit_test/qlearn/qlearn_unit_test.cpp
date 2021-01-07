@@ -65,11 +65,38 @@ The paths out of the maze:
 
 #include "qformat.hpp"
 #include "qlearn.hpp"
+#include "fixedPointTransferFunctions.hpp"
+#include "activationFunctions.hpp"
+#include "nnproperties.hpp"
 
 static std::random_device rd;
 
 typedef uint8_t state_t;
 typedef uint8_t action_t;
+
+template<typename ValueType>
+struct UniformRealRandomNumberGenerator
+{
+    typedef tinymind::ValueConverter<double, ValueType> WeightConverterPolicy;
+
+    static ValueType generateRandomWeight()
+    {
+        const double temp = distribution(generator);
+        const ValueType weight = WeightConverterPolicy::convertToDestinationType(temp);
+
+        return weight;
+    }
+
+private:
+    static std::default_random_engine generator;
+    static std::uniform_real_distribution<double> distribution;
+};
+
+template<typename ValueType>
+std::default_random_engine UniformRealRandomNumberGenerator<ValueType>::generator;
+
+template<typename ValueType>
+std::uniform_real_distribution<double> UniformRealRandomNumberGenerator<ValueType>::distribution(-1.0, 1.0);
 
 template<typename T>
 struct MazeEnvironmentRandomNumberGeneratorPolicy
@@ -197,10 +224,108 @@ const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates
 template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType,template<typename> class QLearningPolicy>
 const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::ONE = ValueType(1,0);
 
+template<   typename StateType,
+            typename ActionType,
+            typename ValueType,
+            size_t NumberOfStates,
+            size_t NumberOfActions,
+            typename RewardPolicyType,
+            template<typename> class QLearningPolicy = tinymind::DefaultLearningPolicy
+        >
+struct DQNMazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy>
+{
+    typedef tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy> ParentType;
+    static const size_t EnvironmentNumberOfStates = ParentType::EnvironmentNumberOfStates;
+    static const size_t EnvironmentNumberOfActions = ParentType::EnvironmentNumberOfActions;
+    static const size_t EnvironmentInvalidState = ParentType::EnvironmentInvalidState;
+    static const size_t EnvironmentInvalidAction = ParentType::EnvironmentInvalidAction;
+    static const ValueType EnvironmentNoRewardValue;
+    static const ValueType EnvironmentInvalidActionValue;
+    static const ValueType ONE;
+    
+    DQNMazeEnvironment(const ValueType& learningRate, const ValueType& discountFactor, const size_t randomActionDecisionPoint) : 
+        ParentType(learningRate, discountFactor, randomActionDecisionPoint), mGoalState(EnvironmentInvalidState)
+    {
+    }
+
+    StateType getGoalState() const
+    {
+        return this->mGoalState;
+    }
+
+    static void getInputValues(const StateType state, ValueType *pInputs)
+    {
+    }
+
+    size_t getNextStateForStateActionPair(const state_t state, const action_t action) const
+    {
+        return action;
+    }
+
+    ValueType getRewardForStateAndAction(const StateType state, const ActionType action) const
+    {
+        return this->mRewardPolicy.getRewardForStateAndAction(state, action);
+    }
+
+    size_t getValidActionsForState(const state_t state, action_t* pActions) const
+    {
+        size_t numberOfValidActions = 0;
+
+        for(action_t action = 0;action < NumberOfActions;++action)
+        {
+            if(EnvironmentInvalidActionValue != this->getRewardForStateAndAction(state, action))
+            {
+                *pActions = action;
+                ++pActions;
+                ++numberOfValidActions;
+            }
+        }
+
+        return numberOfValidActions;
+    }
+
+    bool isGoalState(const StateType state) const
+    {
+        return (state == this->mGoalState);
+    }
+
+    void setGoalState(const StateType goalState)
+    {
+        if (goalState < EnvironmentNumberOfStates)
+        {
+            this->mGoalState = goalState;
+        }
+    }
+
+    void setRewardForStateAndAction(const StateType state, const ActionType action, const ValueType& reward)
+    {
+        this->mRewardPolicy.setRewardForStateAndAction(state, action, reward);
+    }
+
+    void takeAction(const typename ParentType::experience_t& experience)
+    {
+        this->mExperience = experience;
+    }
+    
+    typename ParentType::experience_t mExperience;
+    StateType mGoalState;
+private:
+    RewardPolicyType mRewardPolicy;
+};
+
+template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType, template<typename> class QLearningPolicy>
+const ValueType DQNMazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::EnvironmentNoRewardValue = ValueType(0);
+
+template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType,template<typename> class QLearningPolicy>
+const ValueType DQNMazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::EnvironmentInvalidActionValue = ValueType(-1, 0);
+
+template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType,template<typename> class QLearningPolicy>
+const ValueType DQNMazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::ONE = ValueType(1,0);
+
 #define NUMBER_OF_STATES 6
 #define NUMBER_OF_ACTIONS 6
 
-typedef tinymind::QValue<16,16,false> QValueType;
+typedef tinymind::QValue<16,16,true> QValueType;
 typedef tinymind::QTableRewardPolicy<state_t, action_t, QValueType,NUMBER_OF_STATES, NUMBER_OF_ACTIONS> QTableRewardPolicyType;
 typedef MazeEnvironment<state_t, action_t, QValueType, NUMBER_OF_STATES, NUMBER_OF_ACTIONS, QTableRewardPolicyType> MazeEnvironmentType;
 typedef tinymind::QLearner<MazeEnvironmentType> QLearnerType;
@@ -209,13 +334,38 @@ typedef tinymind::NullRewardPolicy<state_t, action_t, QValueType, NUMBER_OF_STAT
 typedef MazeEnvironment<state_t, action_t, QValueType, NUMBER_OF_STATES, NUMBER_OF_ACTIONS, NullRewardPolicyType, tinymind::NullLearningPolicy> UntrainedMazeEnvironmentType;
 typedef tinymind::QLearner<UntrainedMazeEnvironmentType> UntrainedQLearnerType;
 
+#define NUMBER_OF_INPUT_LAYER_NEURONS NUMBER_OF_STATES
+#define NUMBER_OF_HIDDEN_LAYERS 1
+#define NUMBER_OF_HIDDEN_LAYER_NEURONS NUMBER_OF_STATES
+#define NUMBER_OF_OUTPUT_LAYER_NEURONS NUMBER_OF_ACTIONS
+#define NUMBER_OF_ITERATIONS_FOR_TARGET_NN_UPDATE 100
+
+typedef DQNMazeEnvironment<state_t, action_t, QValueType, NUMBER_OF_STATES, NUMBER_OF_ACTIONS, QTableRewardPolicyType> DQNMazeEnvironmentType;
+typedef tinymind::FixedPointTransferFunctions<  QValueType,
+                                                UniformRealRandomNumberGenerator<QValueType>,
+                                                tinymind::TanhActivationPolicy<QValueType>,
+                                                tinymind::TanhActivationPolicy<QValueType>,
+                                                NUMBER_OF_OUTPUT_LAYER_NEURONS> TransferFunctionsType;
+typedef tinymind::MultilayerPerceptron< QValueType,
+                                        NUMBER_OF_INPUT_LAYER_NEURONS,
+                                        NUMBER_OF_HIDDEN_LAYERS,
+                                        NUMBER_OF_HIDDEN_LAYER_NEURONS,
+                                        NUMBER_OF_OUTPUT_LAYER_NEURONS,
+                                        TransferFunctionsType> NeuralNetworkType;
+typedef tinymind::QValueNeuralNetworkPolicy<DQNMazeEnvironmentType,
+                                            NeuralNetworkType,
+                                            NUMBER_OF_ITERATIONS_FOR_TARGET_NN_UPDATE> QValuePolicyType;
+typedef tinymind::QLearner<DQNMazeEnvironmentType, QValuePolicyType> DQNQLearnerType;
+
 static const QValueType learningRate = (QValueType(1,0) / QValueType(5,0));
 static const QValueType discountFactor = (QValueType(8,0) / QValueType(10,0));
 static QLearnerType qLearner(learningRate, discountFactor, 100);
+static DQNQLearnerType dqnQLearner(learningRate, discountFactor, 100);
 static const QValueType reward(100,0);
 static UntrainedQLearnerType untrainedQLearner(QValueType(0,0), QValueType(0,0), 0);
 
-static void initializeRewardMatrix(void)
+template<typename QLearnerType>
+static void initializeRewardMatrix(QLearnerType& qLearner)
 {
     state_t state;
 
@@ -284,7 +434,7 @@ BOOST_AUTO_TEST_CASE(test_qlearn_init)
 
 BOOST_AUTO_TEST_CASE(test_qlearn_setreward)
 {
-    initializeRewardMatrix();
+    initializeRewardMatrix(qLearner);
 
     BOOST_TEST(MazeEnvironmentType::EnvironmentNoRewardValue == qLearner.getEnvironment().getRewardForStateAndAction(0, 4));
     BOOST_TEST(MazeEnvironmentType::EnvironmentNoRewardValue == qLearner.getEnvironment().getRewardForStateAndAction(1, 3));
@@ -474,7 +624,7 @@ BOOST_AUTO_TEST_CASE(test_qlearn_take_action)
     state_t state = 1;
     action_t action = 5;
 
-    initializeRewardMatrix();
+    initializeRewardMatrix(qLearner);
 
     experience.state = state;
     experience.action = action;
@@ -579,6 +729,49 @@ BOOST_AUTO_TEST_CASE(test_qlearn_iterate)
     }
 
     qTableBinFile.close();
+}
+
+BOOST_AUTO_TEST_CASE(test_dqn_qlearn_iterate)
+{
+    typedef typename QValueType::FullWidthValueType FullWidthValueType;
+    std::default_random_engine engine(rd());
+    std::uniform_int_distribution<size_t> stateDistribution(0, NUMBER_OF_STATES - 1);
+    size_t decisionPoint = 100;
+    typename DQNMazeEnvironmentType::ParentType::experience_t experience;
+    state_t state;
+    action_t action;
+
+    dqnQLearner.getEnvironment().setGoalState(5);
+
+    for (auto i = 0; i < 500; ++i)
+    {
+        dqnQLearner.getEnvironment().setRandomActionDecisionPoint(decisionPoint);
+
+        dqnQLearner.startNewEpisode();
+        state = static_cast<state_t>(stateDistribution(engine));
+        dqnQLearner.setState(state);
+        action = dqnQLearner.takeAction(state);
+        experience.state = state;
+        experience.action = action;
+        experience.reward = dqnQLearner.getEnvironment().getRewardForStateAndAction(experience.state, experience.action);
+        experience.newState =  static_cast<state_t>(experience.action);
+        dqnQLearner.updateFromExperience(experience);
+
+        while (dqnQLearner.getState() != dqnQLearner.getEnvironment().getGoalState())
+        {
+            action = dqnQLearner.takeAction(dqnQLearner.getState());
+            experience.state = dqnQLearner.getState();
+            experience.action = action;
+            experience.reward = dqnQLearner.getEnvironment().getRewardForStateAndAction(experience.state, experience.action);
+            experience.newState =  static_cast<state_t>(experience.action);
+            dqnQLearner.updateFromExperience(experience);
+        }
+
+        if (decisionPoint > 0)
+        {
+            decisionPoint -= 1;
+        }
+    }
 }
 
 BOOST_AUTO_TEST_CASE(test_untrained_qlearner_reward)
