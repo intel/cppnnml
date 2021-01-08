@@ -71,6 +71,9 @@ The paths out of the maze:
 
 static std::random_device rd;
 
+#define NUMBER_OF_STATES 6
+#define NUMBER_OF_ACTIONS 6
+
 typedef uint8_t state_t;
 typedef uint8_t action_t;
 
@@ -255,6 +258,10 @@ struct DQNMazeEnvironment : public tinymind::QLearningEnvironment<state_t, actio
 
     static void getInputValues(const StateType state, ValueType *pInputs)
     {
+        static const ValueType MAX_STATE = ValueType(NUMBER_OF_STATES,0);
+        ValueType input = (ValueType(state, 0) / MAX_STATE);
+
+        *pInputs = input;
     }
 
     size_t getNextStateForStateActionPair(const state_t state, const action_t action) const
@@ -322,9 +329,6 @@ const ValueType DQNMazeEnvironment<StateType, ActionType, ValueType, NumberOfSta
 template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType,template<typename> class QLearningPolicy>
 const ValueType DQNMazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::ONE = ValueType(1,0);
 
-#define NUMBER_OF_STATES 6
-#define NUMBER_OF_ACTIONS 6
-
 typedef tinymind::QValue<16,16,true> QValueType;
 typedef tinymind::QTableRewardPolicy<state_t, action_t, QValueType,NUMBER_OF_STATES, NUMBER_OF_ACTIONS> QTableRewardPolicyType;
 typedef MazeEnvironment<state_t, action_t, QValueType, NUMBER_OF_STATES, NUMBER_OF_ACTIONS, QTableRewardPolicyType> MazeEnvironmentType;
@@ -334,9 +338,9 @@ typedef tinymind::NullRewardPolicy<state_t, action_t, QValueType, NUMBER_OF_STAT
 typedef MazeEnvironment<state_t, action_t, QValueType, NUMBER_OF_STATES, NUMBER_OF_ACTIONS, NullRewardPolicyType, tinymind::NullLearningPolicy> UntrainedMazeEnvironmentType;
 typedef tinymind::QLearner<UntrainedMazeEnvironmentType> UntrainedQLearnerType;
 
-#define NUMBER_OF_INPUT_LAYER_NEURONS NUMBER_OF_STATES
+#define NUMBER_OF_INPUT_LAYER_NEURONS 1
 #define NUMBER_OF_HIDDEN_LAYERS 1
-#define NUMBER_OF_HIDDEN_LAYER_NEURONS NUMBER_OF_STATES
+#define NUMBER_OF_HIDDEN_LAYER_NEURONS (NUMBER_OF_ACTIONS + 2)
 #define NUMBER_OF_OUTPUT_LAYER_NEURONS NUMBER_OF_ACTIONS
 #define NUMBER_OF_ITERATIONS_FOR_TARGET_NN_UPDATE 100
 
@@ -740,6 +744,8 @@ BOOST_AUTO_TEST_CASE(test_dqn_qlearn_iterate)
     typename DQNMazeEnvironmentType::ParentType::experience_t experience;
     state_t state;
     action_t action;
+
+    initializeRewardMatrix(dqnQLearner);
 
     dqnQLearner.getEnvironment().setGoalState(5);
 

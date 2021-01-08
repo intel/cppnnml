@@ -468,8 +468,8 @@ namespace tinymind {
         typedef typename EnvironmentType::EnvironmentActionType ActionType;
         typedef typename EnvironmentType::EnvironmentValueType ValueType;
 
-        static const size_t NumberOfStates = EnvironmentType::EnvironmentNumberOfStates;
         static const size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
+        static const size_t NumberOfInputLayerNeurons = NeuralNetworkType::NumberOfInputLayerNeurons;
 
         QValueNeuralNetworkPolicy() : mIterations(0)
         {
@@ -487,7 +487,7 @@ namespace tinymind {
         ValueType getFutureQValue(const StateType state, const ActionType action)
         {
             ValueType learnedValues[NumberOfActions];
-            ValueType inputs[NumberOfStates];
+            ValueType inputs[NumberOfInputLayerNeurons];
 
             EnvironmentType::getInputValues(state, &inputs[0]);
 
@@ -504,7 +504,7 @@ namespace tinymind {
         void setQValue(const StateType state, const ActionType action, const ValueType& value)
         {
             ValueType values[NumberOfActions];
-            ValueType inputs[NumberOfStates];
+            ValueType inputs[NumberOfInputLayerNeurons];
             ValueType error;
 
             EnvironmentType::getInputValues(state, &inputs[0]);
