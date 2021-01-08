@@ -141,9 +141,9 @@ template<   typename StateType,
             typename RewardPolicyType,
             template<typename> class QLearningPolicy = tinymind::DefaultLearningPolicy
         >
-struct MazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy>
+struct MazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy, QLearningPolicy>
 {
-    typedef tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy> ParentType;
+    typedef tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy, QLearningPolicy> ParentType;
     static const size_t EnvironmentNumberOfStates = ParentType::EnvironmentNumberOfStates;
     static const size_t EnvironmentNumberOfActions = ParentType::EnvironmentNumberOfActions;
     static const size_t EnvironmentInvalidState = ParentType::EnvironmentInvalidState;
@@ -235,9 +235,9 @@ template<   typename StateType,
             typename RewardPolicyType,
             template<typename> class QLearningPolicy = tinymind::DefaultLearningPolicy
         >
-struct DQNMazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy>
+struct DQNMazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy, QLearningPolicy>
 {
-    typedef tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy> ParentType;
+    typedef tinymind::QLearningEnvironment<state_t, action_t, ValueType, NumberOfStates, NumberOfActions, MazeEnvironmentRandomNumberGeneratorPolicy, QLearningPolicy> ParentType;
     static const size_t EnvironmentNumberOfStates = ParentType::EnvironmentNumberOfStates;
     static const size_t EnvironmentNumberOfActions = ParentType::EnvironmentNumberOfActions;
     static const size_t EnvironmentInvalidState = ParentType::EnvironmentInvalidState;
