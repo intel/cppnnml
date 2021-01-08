@@ -150,7 +150,6 @@ struct MazeEnvironment : public tinymind::QLearningEnvironment<state_t, action_t
     static const size_t EnvironmentInvalidAction = ParentType::EnvironmentInvalidAction;
     static const ValueType EnvironmentNoRewardValue;
     static const ValueType EnvironmentInvalidActionValue;
-    static const ValueType ONE;
     
     MazeEnvironment(const ValueType& learningRate, const ValueType& discountFactor, const size_t randomActionDecisionPoint) : 
         ParentType(learningRate, discountFactor, randomActionDecisionPoint), mGoalState(EnvironmentInvalidState)
@@ -224,9 +223,6 @@ const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates
 template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType,template<typename> class QLearningPolicy>
 const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::EnvironmentInvalidActionValue = ValueType(-1, 0);
 
-template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType,template<typename> class QLearningPolicy>
-const ValueType MazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::ONE = ValueType(1,0);
-
 template<   typename StateType,
             typename ActionType,
             typename ValueType,
@@ -244,7 +240,6 @@ struct DQNMazeEnvironment : public tinymind::QLearningEnvironment<state_t, actio
     static const size_t EnvironmentInvalidAction = ParentType::EnvironmentInvalidAction;
     static const ValueType EnvironmentNoRewardValue;
     static const ValueType EnvironmentInvalidActionValue;
-    static const ValueType ONE;
     
     DQNMazeEnvironment(const ValueType& learningRate, const ValueType& discountFactor, const size_t randomActionDecisionPoint) : 
         ParentType(learningRate, discountFactor, randomActionDecisionPoint), mGoalState(EnvironmentInvalidState)
@@ -325,9 +320,6 @@ const ValueType DQNMazeEnvironment<StateType, ActionType, ValueType, NumberOfSta
 
 template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType,template<typename> class QLearningPolicy>
 const ValueType DQNMazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::EnvironmentInvalidActionValue = ValueType(-1, 0);
-
-template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions, typename RewardPolicyType,template<typename> class QLearningPolicy>
-const ValueType DQNMazeEnvironment<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions, RewardPolicyType, QLearningPolicy>::ONE = ValueType(1,0);
 
 typedef tinymind::QValue<16,16,true> QValueType;
 typedef tinymind::QTableRewardPolicy<state_t, action_t, QValueType,NUMBER_OF_STATES, NUMBER_OF_ACTIONS> QTableRewardPolicyType;
