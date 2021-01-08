@@ -342,7 +342,7 @@ typedef tinymind::QLearner<UntrainedMazeEnvironmentType> UntrainedQLearnerType;
 #define NUMBER_OF_HIDDEN_LAYERS 1
 #define NUMBER_OF_HIDDEN_LAYER_NEURONS (NUMBER_OF_ACTIONS + 2)
 #define NUMBER_OF_OUTPUT_LAYER_NEURONS NUMBER_OF_ACTIONS
-#define NUMBER_OF_ITERATIONS_FOR_TARGET_NN_UPDATE 100
+#define NUMBER_OF_ITERATIONS_FOR_TARGET_NN_UPDATE 10
 
 typedef DQNMazeEnvironment<state_t, action_t, QValueType, NUMBER_OF_STATES, NUMBER_OF_ACTIONS, QTableRewardPolicyType> DQNMazeEnvironmentType;
 typedef tinymind::FixedPointTransferFunctions<  QValueType,
