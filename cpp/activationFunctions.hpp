@@ -66,6 +66,8 @@ namespace tinymind {
 
             return Constants<ValueType>::one();
         }
+    private:
+        static_assert(ValueType::IsSigned, "Relu activation policy requires a signed type.");
     };
 
     template<typename ValueType, typename FullWidthFieldTypeShim<ValueType>::FullWidthFieldType MaxValue>
@@ -95,6 +97,8 @@ namespace tinymind {
         {
             return ReluActivationPolicy<ValueType>::activationFunctionDerivative(value);
         }
+    private:
+        static_assert(ValueType::IsSigned, "Capped Relu activation policy requires a signed type.");
     };
 
     template<typename ValueType>
@@ -121,6 +125,7 @@ namespace tinymind {
         }
     private:
         static const SigmoidTableType sigmoidActivationTable;
+        static_assert(ValueType::IsSigned, "Sigmoid activation tables require a signed type.");
     };
 
     template<typename ValueType>
@@ -151,6 +156,7 @@ namespace tinymind {
         }
     private:
         static const TanhTableType tanhActivationTable;
+        static_assert(ValueType::IsSigned, "Tanh activation tables require a signed type.");
     };
 
     template<typename ValueType>
@@ -198,6 +204,7 @@ namespace tinymind {
         }
     private:
         static const ExpTableType expActivationTable;
+        static_assert(ValueType::IsSigned, "Exp activation tables require a signed type.");
     };
 
     template<typename ValueType>

@@ -33,7 +33,6 @@ namespace tinymind {
     template<unsigned FixedBits, unsigned FracBits, bool IsSigned>
     struct TanhTableValueSize
     {
-        static_assert(IsSigned, "Tanh activation tables require a signed type.");
     };
 
     #if (defined(TINYMIND_USE_TANH_1_7))
