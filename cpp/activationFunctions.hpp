@@ -66,8 +66,6 @@ namespace tinymind {
 
             return Constants<ValueType>::one();
         }
-    private:
-        static_assert(ValueType::IsSigned, "Relu activation policy requires a signed type.");
     };
 
     template<typename ValueType, typename FullWidthFieldTypeShim<ValueType>::FullWidthFieldType MaxValue>
