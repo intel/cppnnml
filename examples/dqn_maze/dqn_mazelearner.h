@@ -126,7 +126,7 @@ struct DQNMazeEnvironment : public tinymind::QLearningEnvironment<state_t, actio
 
     static void getInputValues(const StateType state, ValueType *pInputs)
     {
-        static const ValueType MAX_STATE = ValueType(NUMBER_OF_STATES,0);
+        static const ValueType MAX_STATE = ValueType((NumberOfStates - 1),0);
         ValueType input = (ValueType(state, 0) / MAX_STATE);
 
         *pInputs = input;
