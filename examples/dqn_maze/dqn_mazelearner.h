@@ -43,6 +43,9 @@
 typedef uint8_t state_t;
 typedef uint8_t action_t;
 
+static std::default_random_engine generator(time(nullptr));
+static std::uniform_real_distribution<double> distribution(-1.0, 1.0);
+
 template<typename ValueType>
 struct UniformRealRandomNumberGenerator
 {
@@ -55,17 +58,7 @@ struct UniformRealRandomNumberGenerator
 
         return weight;
     }
-
-private:
-    static std::default_random_engine generator;
-    static std::uniform_real_distribution<double> distribution;
 };
-
-template<typename ValueType>
-std::default_random_engine UniformRealRandomNumberGenerator<ValueType>::generator;
-
-template<typename ValueType>
-std::uniform_real_distribution<double> UniformRealRandomNumberGenerator<ValueType>::distribution(-1.0, 1.0);
 
 template<typename T>
 struct DQNMazeEnvironmentRandomNumberGeneratorPolicy
