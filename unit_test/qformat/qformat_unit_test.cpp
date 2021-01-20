@@ -34,12 +34,17 @@ typedef tinymind::QValue<7, 9, true> SignedQ7_9Type;
 typedef tinymind::QValue<1, 15, true> SignedQ1_15Type;
 typedef tinymind::QValue<24, 8, true> SignedQ24_8Type;
 typedef tinymind::QValue<16, 16, true> SignedQ16_16Type;
-typedef tinymind::QValue<24, 8, false> UnSignedQ24_8Type;
+typedef tinymind::QValue<24, 8, false> UnsignedQ24_8Type;
 typedef tinymind::QValue<8, 24, true> SignedQ8_24Type;
-typedef tinymind::QValue<8, 24, false> UnSignedQ8_24Type;
-typedef tinymind::QValue<24, 8, false> UnSignedQ24_8Type;
+typedef tinymind::QValue<8, 24, false> UnsignedQ8_24Type;
+typedef tinymind::QValue<24, 8, false> UnsignedQ24_8Type;
 
 typedef tinymind::QValue<8, 8, false> UnsignedTruncatingQType;
+
+static_assert((std::numeric_limits<uint8_t>::max() == UnsignedQ8_8Type::MaxFixedPartValue), "Incorrect max value.");
+static_assert((((1ULL << 24) - 1) == UnsignedQ24_8Type::MaxFixedPartValue), "Incorrect max value.");
+static_assert((std::numeric_limits<int8_t>::max() == SignedQ8_8Type::MaxFixedPartValue), "Incorrect max value.");
+static_assert((((1ULL << 23) - 1) == SignedQ24_8Type::MaxFixedPartValue), "Incorrect max value.");
 
 static_assert((std::numeric_limits<uint16_t>::max() == std::numeric_limits<typename UnsignedQ8_8Type::FixedPartFieldType>::max()), "Invalid type.");
 static_assert((std::numeric_limits<uint16_t>::max() == std::numeric_limits<typename UnsignedQ8_8Type::FractionalPartFieldType>::max()), "Invalid type.");
@@ -49,8 +54,8 @@ static_assert((std::numeric_limits<int16_t>::max() == std::numeric_limits<typena
 static_assert((std::numeric_limits<uint16_t>::max() == std::numeric_limits<typename SignedQ7_9Type::FractionalPartFieldType>::max()), "Invalid type.");
 static_assert((std::numeric_limits<int16_t>::max() == std::numeric_limits<typename SignedQ1_15Type::FixedPartFieldType>::max()), "Invalid type.");
 static_assert((std::numeric_limits<uint16_t>::max() == std::numeric_limits<typename SignedQ1_15Type::FractionalPartFieldType>::max()), "Invalid type.");
-static_assert((std::numeric_limits<uint32_t>::max() == std::numeric_limits<typename UnSignedQ24_8Type::FixedPartFieldType>::max()), "Invalid type.");
-static_assert((std::numeric_limits<uint32_t>::max() == std::numeric_limits<typename UnSignedQ24_8Type::FractionalPartFieldType>::max()), "Invalid type.");
+static_assert((std::numeric_limits<uint32_t>::max() == std::numeric_limits<typename UnsignedQ24_8Type::FixedPartFieldType>::max()), "Invalid type.");
+static_assert((std::numeric_limits<uint32_t>::max() == std::numeric_limits<typename UnsignedQ24_8Type::FractionalPartFieldType>::max()), "Invalid type.");
 static_assert((std::numeric_limits<int32_t>::max() == std::numeric_limits<typename SignedQ24_8Type::FixedPartFieldType>::max()), "Invalid type.");
 static_assert((std::numeric_limits<uint32_t>::max() == std::numeric_limits<typename SignedQ24_8Type::FractionalPartFieldType>::max()), "Invalid type.");
 
@@ -582,7 +587,7 @@ BOOST_AUTO_TEST_CASE(test_case_conversion)
     SignedQ16_16Type Q4(-1, (1 << 15));
     SignedQ24_8Type Q5(1, (1 << 7));
     SignedQ24_8Type Q6(-1, (1 << 7));
-    UnSignedQ24_8Type UQ0(1, (1 << 7));
+    UnsignedQ24_8Type UQ0(1, (1 << 7));
 
     BOOST_TEST(Q0.getValue() == 0x0);
     Q0.convertFromOtherQValueType(Q1);
@@ -620,7 +625,7 @@ BOOST_AUTO_TEST_CASE(test_case_conversion)
     UQ0 = 0;
     BOOST_TEST(UQ0.getValue() == 0x0);
     UQ0.convertFromOtherQValueType(Q0);
-    BOOST_TEST(UQ0.getValue() == static_cast<typename UnSignedQ24_8Type::FullWidthValueType>(0x180));
+    BOOST_TEST(UQ0.getValue() == static_cast<typename UnsignedQ24_8Type::FullWidthValueType>(0x180));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
