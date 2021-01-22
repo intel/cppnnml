@@ -176,10 +176,10 @@ namespace tinymind {
         typedef QLearningRandomNumberPolicy<ActionType> RandomNumberPolicy;
         typedef QLearningPolicy<ValueType> LearningPolicy;
 
-        static const size_t EnvironmentNumberOfStates = NumberOfStates;
-        static const size_t EnvironmentNumberOfActions = NumberOfActions;
-        static const StateType EnvironmentInvalidState = tinymind::limits<StateType>::max;
-        static const ActionType EnvironmentInvalidAction = tinymind::limits<ActionType>::max;
+        static constexpr size_t EnvironmentNumberOfStates = NumberOfStates;
+        static constexpr size_t EnvironmentNumberOfActions = NumberOfActions;
+        static constexpr StateType EnvironmentInvalidState = tinymind::limits<StateType>::max;
+        static constexpr ActionType EnvironmentInvalidAction = tinymind::limits<ActionType>::max;
 
         struct experience_t
         {
@@ -397,8 +397,8 @@ namespace tinymind {
         typedef typename EnvironmentType::EnvironmentActionType ActionType;
         typedef typename EnvironmentType::EnvironmentValueType ValueType;
 
-        static const size_t NumberOfStates = EnvironmentType::EnvironmentNumberOfStates;
-        static const size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
+        static constexpr size_t NumberOfStates = EnvironmentType::EnvironmentNumberOfStates;
+        static constexpr size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
 
         QValueTablePolicy()
         {
@@ -468,8 +468,8 @@ namespace tinymind {
         typedef typename EnvironmentType::EnvironmentActionType ActionType;
         typedef typename EnvironmentType::EnvironmentValueType ValueType;
 
-        static const size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
-        static const size_t NumberOfInputLayerNeurons = NeuralNetworkType::NumberOfInputLayerNeurons;
+        static constexpr size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
+        static constexpr size_t NumberOfInputLayerNeurons = NeuralNetworkType::NumberOfInputLayerNeurons;
 
         QValueNeuralNetworkPolicy() : mIterations(0)
         {
@@ -550,10 +550,10 @@ namespace tinymind {
         typedef typename EnvironmentType::experience_t experience_t;
         typedef QLearnerStateToActionPolicy<EnvironmentType, QValuePolicy> StateToActionPolicy;
 
-        static const size_t NumberOfStates = EnvironmentType::EnvironmentNumberOfStates;
-        static const size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
-        static const StateType InvalidState = EnvironmentType::EnvironmentInvalidState;
-        static const ActionType InvalidAction = EnvironmentType::EnvironmentInvalidAction;
+        static constexpr size_t NumberOfStates = EnvironmentType::EnvironmentNumberOfStates;
+        static constexpr size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
+        static constexpr StateType InvalidState = EnvironmentType::EnvironmentInvalidState;
+        static constexpr ActionType InvalidAction = EnvironmentType::EnvironmentInvalidAction;
 
         QLearner(const ValueType& learningRate, const ValueType& discountFactor, const size_t randomActionDecisionPoint) : 
             mEnvironment(learningRate, discountFactor, randomActionDecisionPoint), mState(InvalidState)

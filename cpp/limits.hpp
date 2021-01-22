@@ -31,48 +31,48 @@ namespace tinymind {
     template<>
     struct limits<int8_t>
     {
-        static const int8_t max = 127;
+        static constexpr int8_t max = 127;
     };
 
     template<>
     struct limits<uint8_t>
     {
-        static const uint8_t max = 255;
+        static constexpr uint8_t max = 255;
     };
 
     template<>
     struct limits<int16_t>
     {
-        static const int16_t max = 32767;
+        static constexpr int16_t max = 32767;
     };
 
     template<>
     struct limits<uint16_t>
     {
-        static const uint16_t max = 65535;
+        static constexpr uint16_t max = 65535;
     };
 
     template<>
     struct limits<int32_t>
     {
-        static const int32_t max = 2147483647;
+        static constexpr int32_t max = 2147483647;
     };
 
     template<>
     struct limits<uint32_t>
     {
-        static const uint32_t max = 4294967295;
+        static constexpr uint32_t max = 4294967295;
     };
 
     template<>
     struct limits<int64_t>
     {
-        static const int64_t max = 9223372036854775807ULL;
+        static constexpr int64_t max = 9223372036854775807ULL;
     };
 
     template<>
     struct limits<uint64_t>
     {
-        static const uint64_t max = 18446744073709551615ULL;
+        static constexpr uint64_t max = 18446744073709551615ULL;
     };
 }
