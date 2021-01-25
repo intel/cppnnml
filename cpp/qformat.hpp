@@ -196,17 +196,21 @@ namespace tinymind {
     template<unsigned NumFixedBits, unsigned NumFractionalBits>
     struct QValueMaxCalculator<NumFixedBits, NumFractionalBits, false>
     {
-        typedef typename QTypeChooser<NumFixedBits, NumFractionalBits, false>::FixedPartFieldType FixedPartFieldType;
+        typedef typename QTypeChooser<NumFixedBits, NumFractionalBits, false>::FixedPartFieldType      FixedPartFieldType;
+        typedef typename QTypeChooser<NumFixedBits, NumFractionalBits, false>::FractionalPartFieldType FractionalPartFieldType;
 
-        static constexpr FixedPartFieldType Result = ((FixedPartFieldType)((1ULL << NumFixedBits) - 1));
+        static constexpr FixedPartFieldType MaxFixedPartValue      = ((FixedPartFieldType)((1ULL << NumFixedBits) - 1));
+        static constexpr FixedPartFieldType MaxFractionalPartValue = ((FractionalPartFieldType )((1ULL << NumFractionalBits) - 1));
     };
 
     template<unsigned NumFixedBits, unsigned NumFractionalBits>
     struct QValueMaxCalculator<NumFixedBits, NumFractionalBits, true>
     {
-        typedef typename QTypeChooser<NumFixedBits, NumFractionalBits, true>::FixedPartFieldType FixedPartFieldType;
+        typedef typename QTypeChooser<NumFixedBits, NumFractionalBits, true>::FixedPartFieldType      FixedPartFieldType;
+        typedef typename QTypeChooser<NumFixedBits, NumFractionalBits, true>::FractionalPartFieldType FractionalPartFieldType;
 
-        static constexpr FixedPartFieldType Result = ((FixedPartFieldType)((1ULL << (NumFixedBits - 1)) - 1));
+        static constexpr FixedPartFieldType MaxFixedPartValue      = ((FixedPartFieldType)((1ULL << (NumFixedBits - 1)) - 1));
+        static constexpr FixedPartFieldType MaxFractionalPartValue = ((FractionalPartFieldType )((1ULL << NumFractionalBits) - 1));
     };
 
     template<unsigned NumFixedBits, unsigned NumFractionalBits, bool QValueIsSigned, template<typename, unsigned> class QValueRoundingPolicy = TruncatePolicy>
@@ -220,10 +224,11 @@ namespace tinymind {
         typedef typename QTypeChooser<NumFixedBits, NumFractionalBits, QValueIsSigned>::DivisionResultFullWidthFieldType       DivisionResultFullWidthFieldType;
         typedef QValueRoundingPolicy<MultiplicationResultFullWidthFieldType, NumFractionalBits>                                RoundingPolicy;
 
-        static constexpr unsigned NumberOfFixedBits           = NumFixedBits;
-        static constexpr unsigned NumberOfFractionalBits      = NumFractionalBits;
-        static constexpr bool IsSigned                        = QValueIsSigned;
-        static constexpr FixedPartFieldType MaxFixedPartValue = QValueMaxCalculator<NumFixedBits, NumFractionalBits, QValueIsSigned>::Result;
+        static constexpr unsigned                NumberOfFixedBits      = NumFixedBits;
+        static constexpr unsigned                NumberOfFractionalBits = NumFractionalBits;
+        static constexpr bool                    IsSigned               = QValueIsSigned;
+        static constexpr FixedPartFieldType      MaxFixedPartValue      = QValueMaxCalculator<NumFixedBits, NumFractionalBits, QValueIsSigned>::MaxFixedPartValue;
+        static constexpr FractionalPartFieldType MaxFractionalPartValue = QValueMaxCalculator<NumFixedBits, NumFractionalBits, QValueIsSigned>::MaxFractionalPartValue;
 
         QValue() : mValue(0)
         {

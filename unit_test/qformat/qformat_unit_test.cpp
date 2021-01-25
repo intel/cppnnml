@@ -41,10 +41,16 @@ typedef tinymind::QValue<24, 8, false> UnsignedQ24_8Type;
 
 typedef tinymind::QValue<8, 8, false> UnsignedTruncatingQType;
 
-static_assert((std::numeric_limits<uint8_t>::max() == UnsignedQ8_8Type::MaxFixedPartValue), "Incorrect max value.");
+static_assert((std::numeric_limits<uint8_t>::max() == UnsignedQ8_8Type::MaxFixedPartValue), "Incorrect max fixed value.");
+static_assert((std::numeric_limits<uint8_t>::max() == UnsignedQ8_8Type::MaxFractionalPartValue), "Incorrect max fractional value.");
 static_assert((((1ULL << 24) - 1) == UnsignedQ24_8Type::MaxFixedPartValue), "Incorrect max value.");
-static_assert((std::numeric_limits<int8_t>::max() == SignedQ8_8Type::MaxFixedPartValue), "Incorrect max value.");
-static_assert((((1ULL << 23) - 1) == SignedQ24_8Type::MaxFixedPartValue), "Incorrect max value.");
+static_assert((std::numeric_limits<uint8_t>::max() == UnsignedQ24_8Type::MaxFractionalPartValue), "Incorrect max fractional value.");
+static_assert((std::numeric_limits<int8_t>::max() == SignedQ8_8Type::MaxFixedPartValue), "Incorrect fixed max value.");
+static_assert((std::numeric_limits<uint8_t>::max() == SignedQ8_8Type::MaxFractionalPartValue), "Incorrect max fractional value.");
+static_assert((((1ULL << 23) - 1) == SignedQ24_8Type::MaxFixedPartValue), "Incorrect max fixed value.");
+static_assert((std::numeric_limits<uint8_t>::max() == SignedQ24_8Type::MaxFractionalPartValue), "Incorrect max fractional value.");
+static_assert(((std::numeric_limits<int8_t>::max() >> 1) == SignedQ7_9Type::MaxFixedPartValue), "Incorrect max fixed value.");
+static_assert((((1ULL << 9) - 1) == SignedQ7_9Type::MaxFractionalPartValue), "Incorrect max fractional value.");
 
 static_assert((std::numeric_limits<uint16_t>::max() == std::numeric_limits<typename UnsignedQ8_8Type::FixedPartFieldType>::max()), "Invalid type.");
 static_assert((std::numeric_limits<uint16_t>::max() == std::numeric_limits<typename UnsignedQ8_8Type::FractionalPartFieldType>::max()), "Invalid type.");
