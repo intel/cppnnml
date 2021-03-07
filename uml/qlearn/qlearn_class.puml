@@ -28,6 +28,13 @@ class DefaultRewardPolicy {
 }
 RewardPolicy <|-- DefaultRewardPolicy
 
+class QLearningEnvironment::experience_t {
+    +size_t state
+    +size_t action
+    +ValueType reward
+    +size_t newState
+}
+
 class QLearningEnvironment {
     #ValueType mLearningRate;
     #ValueType mDiscountFactor;
@@ -38,25 +45,17 @@ class QLearningEnvironment {
 QLearningEnvironment <|-- EnvironmentType
 QLearningEnvironment -- RewardPolicy
 
-class QLearningEnvironment::experience_t {
-    +size_t state
-    +size_t action
-    +ValueType reward
-    +size_t newState
-}
-
 class QLearner {
     +void updateFromExperience(const QLearningEnvironment::experience_t& experience)
     -EnvironmentType mEnvironment
-    -size_t mPreviousState
-    -size_t mState
-    -size_t mGoalState
+    -StateType mState
     -ValueType mAccumulatedReward
     -QValuePolicy mQValuePolicy
 }
 
-QLearner -- QLearnerStateToActionPolicy
-QLearner -- EnvironmentType
+QLearner -- StateToActionPolicy
+QLearner *-- EnvironmentType
+QLearner *-- QValuePolicy
 QLearner -- QLearningEnvironment::experience_t
 
 class QTablePolicy {
@@ -64,14 +63,14 @@ class QTablePolicy {
     +void setQValue(const size_t state, const size_t action, const ValueType& value)
     -ValueType mQTable[EnvironmentType::EnvironmentNumberOfStates][EnvironmentType::EnvironmentNumberOfActions]
 }
-QLearnerQValuePolicy <|-- QTablePolicy
+QValuePolicy <|-- QTablePolicy
 
-class QLearnerStateToActionPolicy {
+class StateToActionPolicy {
     +{static} size_t selectActionForState()
 }
 
-QLearnerStateToActionPolicy <|-- ArgMaxPolicy
+StateToActionPolicy <|-- ArgMaxPolicy
 
-QLearnerStateToActionPolicy -- QLearnerQValuePolicy
+StateToActionPolicy -- QValuePolicy
 
 @enduml

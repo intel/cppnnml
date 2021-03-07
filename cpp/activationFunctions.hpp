@@ -72,7 +72,7 @@ namespace tinymind {
     struct CappedReluActivationPolicy
     {
         typedef typename FullWidthFieldTypeShim<ValueType>::FullWidthFieldType FullWidthFieldType;
-        static const FullWidthFieldType MAX_VALUE = MaxValue;
+        static constexpr FullWidthFieldType MAX_VALUE = MaxValue;
 
         static ValueType activationFunction(const ValueType& value)
         {
@@ -95,6 +95,8 @@ namespace tinymind {
         {
             return ReluActivationPolicy<ValueType>::activationFunctionDerivative(value);
         }
+    private:
+        static_assert(ValueType::IsSigned, "Capped Relu activation policy requires a signed type.");
     };
 
     template<typename ValueType>
@@ -105,7 +107,7 @@ namespace tinymind {
 
         static ValueType activationFunction(const ValueType& value)
         {
-            static const ptrdiff_t MAX_ACTIVATION_INDEX = ((sizeof(sigmoidActivationTable.values) / sizeof(sigmoidActivationTable.values[0])) - 1);
+            static constexpr ptrdiff_t MAX_ACTIVATION_INDEX = ((sizeof(sigmoidActivationTable.values) / sizeof(sigmoidActivationTable.values[0])) - 1);
 
             const ValueType result = LookupTableType::getValue(value, &sigmoidActivationTable.values[0], MAX_ACTIVATION_INDEX);
 
@@ -121,6 +123,7 @@ namespace tinymind {
         }
     private:
         static const SigmoidTableType sigmoidActivationTable;
+        static_assert(ValueType::IsSigned, "Sigmoid activation tables require a signed type.");
     };
 
     template<typename ValueType>
@@ -135,7 +138,7 @@ namespace tinymind {
 
         static ValueType activationFunction(const ValueType& value)
         {
-            static const ptrdiff_t MAX_ACTIVATION_INDEX = (((sizeof(FullWidthFieldType) * NUMBER_OF_ACTIVATION_TABLE_VALUES) / sizeof(tanhActivationTable.values[0])) - 1);
+            static constexpr ptrdiff_t MAX_ACTIVATION_INDEX = (((sizeof(FullWidthFieldType) * NUMBER_OF_ACTIVATION_TABLE_VALUES) / sizeof(tanhActivationTable.values[0])) - 1);
 
             const ValueType result = LookupTableType::getValue(value, &tanhActivationTable.values[0], MAX_ACTIVATION_INDEX);
 
@@ -151,6 +154,7 @@ namespace tinymind {
         }
     private:
         static const TanhTableType tanhActivationTable;
+        static_assert(ValueType::IsSigned, "Tanh activation tables require a signed type.");
     };
 
     template<typename ValueType>
@@ -165,7 +169,7 @@ namespace tinymind {
 
         static void activationFunction(ValueType const* const values, ValueType* results, const size_t numberOfNerons)
         {
-            static const ptrdiff_t MAX_ACTIVATION_INDEX = (((sizeof(FullWidthFieldType) * NUMBER_OF_ACTIVATION_TABLE_VALUES) / sizeof(expActivationTable.values[0])) - 1);
+            static constexpr ptrdiff_t MAX_ACTIVATION_INDEX = (((sizeof(FullWidthFieldType) * NUMBER_OF_ACTIVATION_TABLE_VALUES) / sizeof(expActivationTable.values[0])) - 1);
             ValueType result;
             ValueType sum(0);
 
@@ -198,6 +202,7 @@ namespace tinymind {
         }
     private:
         static const ExpTableType expActivationTable;
+        static_assert(ValueType::IsSigned, "Exp activation tables require a signed type.");
     };
 
     template<typename ValueType>

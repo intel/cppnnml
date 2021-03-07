@@ -59,6 +59,60 @@ namespace tinymind {
     };
 }
 
+namespace tinymind {
+    template<>
+    struct ZeroToleranceCalculator<double>
+    {
+        static bool isWithinZeroTolerance(const double& value)
+        {
+            static const double zeroTolerance(0.004);
+            static const double negativeTolerance = (static_cast<double>(-1.0) * zeroTolerance);
+
+            return ((0 == value) || ((value < zeroTolerance) && (value > negativeTolerance)));
+        }
+    };
+}
+
+namespace tinymind {
+    template<>
+    struct Constants<float>
+    {
+        static float one()
+        {
+            return 1.0f;
+        }
+
+        static float negativeOne()
+        {
+            return -1.0f;
+        }
+
+        static float zero()
+        {
+            return 0.0f;
+        }
+    };
+
+    template<>
+    struct Constants<double>
+    {
+        static double one()
+        {
+            return 1.0;
+        }
+
+        static double negativeOne()
+        {
+            return -1.0;
+        }
+
+        static double zero()
+        {
+            return 0.0;
+        }
+    };
+}
+
 using namespace std;
 
 #define TRAINING_ITERATIONS 2000
@@ -861,6 +915,37 @@ BOOST_AUTO_TEST_CASE(test_case_fixedpoint_nn_xor)
     testFixedPointNeuralNetwork_Xor(nn, path);
 }
 
+BOOST_AUTO_TEST_CASE(test_case_fixedpoint_nn_xor_nn_copy)
+{
+    static constexpr size_t NUMBER_OF_INPUTS = 2;
+    static constexpr size_t NUMBER_OF_HIDDEN_LAYERS = 1;
+    static constexpr size_t NUMBER_OF_NEURONS_PER_HIDDEN_LAYER = 3;
+    static constexpr size_t NUMBER_OF_OUTPUTS = 1;
+    static constexpr size_t NUMBER_OF_FIXED_BITS = 8;
+    static constexpr size_t NUMBER_OF_FRACTIONAL_BITS = 8;
+    typedef tinymind::QValue<NUMBER_OF_FIXED_BITS, NUMBER_OF_FRACTIONAL_BITS, true, tinymind::RoundUpPolicy> ValueType;
+    typedef tinymind::FixedPointTransferFunctions<
+                                                    ValueType,
+                                                    UniformRealRandomNumberGenerator<ValueType>,
+                                                    tinymind::TanhActivationPolicy<ValueType>,
+                                                    tinymind::TanhActivationPolicy<ValueType>> TransferFunctionsType;
+    typedef tinymind::MultilayerPerceptron< ValueType,
+                                            NUMBER_OF_INPUTS,
+                                            NUMBER_OF_HIDDEN_LAYERS,
+                                            NUMBER_OF_NEURONS_PER_HIDDEN_LAYER,
+                                            NUMBER_OF_OUTPUTS,
+                                            TransferFunctionsType> FixedPointMultiLayerPerceptronNetworkType;
+    srand(static_cast<unsigned int>(time(NULL)));
+    char const* const path = "nn_fixed_xor.txt";
+    char const* const pathCopy = "nn_fixed_xor_copy.txt";
+    FixedPointMultiLayerPerceptronNetworkType nn;
+    FixedPointMultiLayerPerceptronNetworkType nnCopy;
+
+    testFixedPointNeuralNetwork_Xor(nn, path);
+    nnCopy.setWeights(nn);
+    testFixedPointNeuralNetwork_Xor(nnCopy, pathCopy);
+}
+
 BOOST_AUTO_TEST_CASE(test_case_fixedpoint_nn_and)
 {
     static constexpr size_t NUMBER_OF_INPUTS = 2;
@@ -1583,33 +1668,6 @@ BOOST_AUTO_TEST_CASE(test_case_floatingpoint_elman_nn)
     testFloatingPointNeuralNetwork_Recurrent(nn, path);
 }
 
-BOOST_AUTO_TEST_CASE(test_case_fixedpoint_lstm_nn)
-{
-    static constexpr size_t NUMBER_OF_INPUTS = 2;
-    static constexpr size_t NUMBER_OF_HIDDEN_LAYERS = 1;
-    static constexpr size_t NUMBER_OF_NEURONS_PER_HIDDEN_LAYER = 3;
-    static constexpr size_t NUMBER_OF_OUTPUTS = 1;
-    static constexpr size_t NUMBER_OF_FIXED_BITS = 8;
-    static constexpr size_t NUMBER_OF_FRACTIONAL_BITS = 8;
-    typedef tinymind::QValue<NUMBER_OF_FIXED_BITS, NUMBER_OF_FRACTIONAL_BITS, true> ValueType;
-    typedef tinymind::FixedPointTransferFunctions<
-                                                    ValueType,
-                                                    UniformRealRandomNumberGenerator<ValueType>,
-                                                    tinymind::TanhActivationPolicy<ValueType>,
-                                                    tinymind::TanhActivationPolicy<ValueType>> TransferFunctionsType;
-    typedef tinymind::LstmNetwork < ValueType,
-                                    NUMBER_OF_INPUTS,
-                                    NUMBER_OF_HIDDEN_LAYERS,
-                                    NUMBER_OF_NEURONS_PER_HIDDEN_LAYER,
-                                    NUMBER_OF_OUTPUTS,
-                                    TransferFunctionsType> FixedPointLstmNetworkType;
-    srand(static_cast<unsigned int>(time(NULL)));
-    char const* const path = "nn_fixed_lstm.txt";
-    FixedPointLstmNetworkType nn;
-
-    testNeuralNetwork_Recurrent(nn, path);
-}
-
 BOOST_AUTO_TEST_CASE(test_case_floatingpoint_nn_xor)
 {
     static constexpr size_t NUMBER_OF_INPUTS = 2;
@@ -1886,6 +1944,39 @@ BOOST_AUTO_TEST_CASE(test_case_floatingpoint_2_hidden_nn_relu_xor)
     nn.setMomentumRate(0.16);
 
     testFloatingPointNN_Xor(nn, path, 100000);
+}
+
+BOOST_AUTO_TEST_CASE(test_case_floatingpoint_2_hidden_nn_relu_xor_copy)
+{
+    static constexpr size_t NUMBER_OF_INPUTS = 2;
+    static constexpr size_t NUMBER_OF_HIDDEN_LAYERS = 2;
+    static constexpr size_t NUMBER_OF_NEURONS_PER_HIDDEN_LAYER = 5;
+    static constexpr size_t NUMBER_OF_OUTPUTS = 1;
+    typedef double ValueType;
+    typedef FloatingPointTransferFunctions<
+                                            ValueType,
+                                            UniformRealRandomNumberGenerator,
+                                            tinymind::ReluActivationPolicy,
+                                            tinymind::TanhActivationPolicy> TransferFunctionsType;
+    typedef tinymind::MultilayerPerceptron< ValueType,
+                                            NUMBER_OF_INPUTS,
+                                            NUMBER_OF_HIDDEN_LAYERS,
+                                            NUMBER_OF_NEURONS_PER_HIDDEN_LAYER,
+                                            NUMBER_OF_OUTPUTS,
+                                            TransferFunctionsType> FloatingPointMultiLayerPerceptronNetworkType;
+    srand(static_cast<unsigned int>(time(NULL)));
+    char const* const path = "nn_float_2_hidden_relu_xor.txt";
+    char const* const pathCopy = "nn_float_2_hidden_relu_xor_copy.txt";
+    FloatingPointMultiLayerPerceptronNetworkType nn;
+    FloatingPointMultiLayerPerceptronNetworkType nnCopy;
+
+    nn.setLearningRate(0.005);
+    nn.setAccelerationRate(0.03);
+    nn.setMomentumRate(0.16);
+
+    testFloatingPointNN_Xor(nn, path, 100000);
+    nnCopy.setWeights(nn);
+    testFloatingPointNN_Xor(nnCopy, pathCopy, 100000);
 }
 
 BOOST_AUTO_TEST_CASE(test_case_fixedpoint_2_hidden_nn_relu_xor_no_train)

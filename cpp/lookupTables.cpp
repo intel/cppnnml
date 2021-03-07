@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2020 Intel Corporation
+* Copyright 2020 Intel Corporation All Rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,7 @@
 * SOFTWARE.
 */
 
-#ifdef __ghs__
-#include "product.h"
-#include "types.h"
-#else // __ghs__
 #include <cstdint>
-#endif // __ghs__
 
 #include "activation.hpp"
 #include "tanhValues8Bit.hpp"

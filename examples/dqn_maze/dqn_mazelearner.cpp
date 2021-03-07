@@ -1,4 +1,4 @@
-'''
+/**
 * Copyright (c) 2020 Intel Corporation
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,35 +18,10 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
-'''
+*/
 
-import os
-import sys
-import itertools
+#include "dqn_mazelearner.h"
 
-import matplotlib.pyplot as pyplot
-
-if __name__ == '__main__':
-    assert(len(sys.argv) == 2)
-
-    dataPath = sys.argv[1]
-    assert(os.path.exists(dataPath))
-
-    data = []
-    with open(dataPath) as f:
-        line = f.readline()
-        while(line):
-            s = line.strip(' \r\n').split(',')
-            data.extend([int(value) for value in s])
-            line = f.readline()
-
-    colors=itertools.cycle('bcmk').next
-    shapes=itertools.cycle('*xov^>8sp<pP').next
-    fig, axs = pyplot.subplots(2,1,sharex=True)
-    axs[0].plot(data[0::13], colors() + '-' + shapes(), label = 'Training data')
-    axs[0].plot(data[1::13], colors() + '-' + shapes(), label = 'Network result')
-    axs[0].legend()
-    axs[1].plot(data[12::13], 'r-o', label = 'Error')
-    axs[1].legend()
-    pyplot.title("PokerNet")
-    pyplot.show()
+#define LEARNING_RATE (QValueType(1,0) / QValueType(5,0))
+#define DISCOUNT_FACTOR (QValueType(8,0) / QValueType(10,0))
+QLearnerType qLearner(LEARNING_RATE, DISCOUNT_FACTOR, 100);

@@ -34,9 +34,9 @@ namespace tinymind {
 
         static ValueType getValue(const ValueType& value, typename ValueType::FullWidthFieldType const* const tableValues, const ptrdiff_t maxActivationIndex)
         {
-            static const FullWidthValueType MIN_X_ACTIVATION_VALUE = static_cast<FullWidthValueType>(MIN_X_TABLE_VALUE * (1 << ValueType::NumberOfFractionalBits));
-            static const FullWidthValueType MAX_X_ACTIVATION_VALUE = static_cast<FullWidthValueType>(MAX_X_TABLE_VALUE * (1 << ValueType::NumberOfFractionalBits));
-            static const FullWidthValueType ACTIVATION_DELTA_X = static_cast<FullWidthValueType>((1 << (ValueType::NumberOfFractionalBits - ACTIVATION_DELTA_SHIFT)));
+            static constexpr FullWidthValueType MIN_X_ACTIVATION_VALUE = static_cast<FullWidthValueType>(MIN_X_TABLE_VALUE * (1 << ValueType::NumberOfFractionalBits));
+            static constexpr FullWidthValueType MAX_X_ACTIVATION_VALUE = static_cast<FullWidthValueType>(MAX_X_TABLE_VALUE * (1 << ValueType::NumberOfFractionalBits));
+            static constexpr FullWidthValueType ACTIVATION_DELTA_X = static_cast<FullWidthValueType>((1 << (ValueType::NumberOfFractionalBits - ACTIVATION_DELTA_SHIFT)));
 
             ValueType result;
 

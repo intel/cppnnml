@@ -20,51 +20,60 @@
 * SOFTWARE.
 *'/
 
-@startuml
-class InputLayerType {
+@startuml qformat_class
+
+title QValue
+
+class QTypeChooser {
 }
 
-class InnerHiddenLayerManager {
+class FullWidthFieldTypeChooser {
 }
 
-class LastHiddenLayerType {
+class MultiplicationResultFullWidthFieldTypeChooser {
 }
 
-class OutputLayerType {
+class DivisionResultFullWidthFieldTypeChooser {
 }
 
-class TrainingPolicyType {
+class QValueRoundingPolicy {
+{static} T round(const T& value) 
 }
 
-class GradientsManagerType {
+class SignExtender {
+{static} void signExtend(const T& value) 
 }
 
-class TransferFunctionsPolicy {
+class ShiftPolicy {
+{static} ResultType shfit(const SourceType& value) 
 }
 
-class MultilayerPerceptron {
-+{static} size_t NeuralNetworkNumberOfHiddenLayers
-+{static} size_t NumberOfInnerHiddenLayers
-+{static} size_t NumberOfInputLayerNeurons
-+{static} size_t NumberOfHiddenLayerNeurons
-+{static} size_t NumberOfOutputLayerNeurons
-+{static} size_t NeuralNetworkRecurrentConnectionDepth
-+{static} size_t NeuralNetworkBatchSize
-#ValueType mError
+class NoShiftPolicy {
+{static} ResultType shfit(const SourceType& value) 
 }
 
-class RecurrentMultilayerPerceptron {
+class ShiftLeftPolicy {
+{static} ResultType shfit(const SourceType& value) 
 }
 
-MultilayerPerceptron *-- InputLayerType
-MultilayerPerceptron *-- InnerHiddenLayerManager
-MultilayerPerceptron *-- LastHiddenLayerType
-MultilayerPerceptron *-- OutputLayerType
-MultilayerPerceptron *-- RecurrentLayerType
-MultilayerPerceptron *-- TrainingPolicyType
-MultilayerPerceptron *-- GradientsManagerType
-MultilayerPerceptron - TransferFunctionsPolicy
-RecurrentMultilayerPerceptron -|> MultilayerPerceptron
-ElmanNetwork -|> RecurrentMultilayerPerceptron
+class ShiftRightPolicy {
+{static} ResultType shfit(const SourceType& value) 
+}
+
+class QValue {
+}
+
+QValue -- QTypeChooser
+QTypeChooser -- FullWidthFieldTypeChooser
+QTypeChooser -- MultiplicationResultFullWidthFieldTypeChooser
+QTypeChooser -- DivisionResultFullWidthFieldTypeChooser
+MultiplicationResultFullWidthFieldTypeChooser -- FullWidthFieldTypeChooser
+DivisionResultFullWidthFieldTypeChooser -- FullWidthFieldTypeChooser
+QValue -- QValueRoundingPolicy
+QValue -- SignExtender
+QValue -- ShiftPolicy
+ShiftPolicy -- NoShiftPolicy
+ShiftPolicy -- ShiftLeftPolicy
+ShiftPolicy -- ShiftRightPolicy
 
 @enduml

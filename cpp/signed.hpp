@@ -30,48 +30,48 @@ namespace tinymind {
     template<>
     struct IsSigned<int8_t>
     {
-        static const bool result = true;
+        static constexpr bool result = true;
     };
 
     template<>
     struct IsSigned<int16_t>
     {
-        static const bool result = true;
+        static constexpr bool result = true;
     };
 
     template<>
     struct IsSigned<int32_t>
     {
-        static const bool result = true;
+        static constexpr bool result = true;
     };
 
     template<>
     struct IsSigned<int64_t>
     {
-        static const bool result = true;
+        static constexpr bool result = true;
     };
 
     template<>
     struct IsSigned<uint8_t>
     {
-        static const bool result = false;
+        static constexpr bool result = false;
     };
 
     template<>
     struct IsSigned<uint16_t>
     {
-        static const bool result = false;
+        static constexpr bool result = false;
     };
 
     template<>
     struct IsSigned<uint32_t>
     {
-        static const bool result = false;
+        static constexpr bool result = false;
     };
 
     template<>
     struct IsSigned<uint64_t>
     {
-        static const bool result = false;
+        static constexpr bool result = false;
     };
 }

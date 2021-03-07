@@ -25,6 +25,7 @@
 #include "constants.hpp"
 #include "limits.hpp"
 #include "signed.hpp"
+#include "neuralnet.hpp"
 
 namespace tinymind {
     template<typename StateType, typename ActionType, typename ValueType, size_t NumberOfStates, size_t NumberOfActions>
@@ -164,7 +165,6 @@ namespace tinymind {
                 size_t NumberOfStates,
                 size_t NumberOfActions,
                 template<typename> class QLearningRandomNumberPolicy,
-                template<typename, typename, typename, size_t, size_t> class QLearningRewardPolicy = QTableRewardPolicy,
                 template<typename> class QLearningPolicy = DefaultLearningPolicy
             >
     class QLearningEnvironment
@@ -174,13 +174,12 @@ namespace tinymind {
         typedef ActionType EnvironmentActionType;
         typedef ValueType EnvironmentValueType;
         typedef QLearningRandomNumberPolicy<ActionType> RandomNumberPolicy;
-        typedef QLearningRewardPolicy<StateType, ActionType, ValueType, NumberOfStates, NumberOfActions> RewardPolicy;
         typedef QLearningPolicy<ValueType> LearningPolicy;
 
-        static const size_t EnvironmentNumberOfStates = NumberOfStates;
-        static const size_t EnvironmentNumberOfActions = NumberOfActions;
-        static const StateType EnvironmentInvalidState = limits<StateType>::max;
-        static const ActionType EnvironmentInvalidAction = limits<ActionType>::max;
+        static constexpr size_t EnvironmentNumberOfStates = NumberOfStates;
+        static constexpr size_t EnvironmentNumberOfActions = NumberOfActions;
+        static constexpr StateType EnvironmentInvalidState = tinymind::limits<StateType>::max;
+        static constexpr ActionType EnvironmentInvalidAction = tinymind::limits<ActionType>::max;
 
         struct experience_t
         {
@@ -289,11 +288,6 @@ namespace tinymind {
             return this->mRandomNumberPolicy.getRandomActionDecisionPoint();
         }
 
-        ValueType getRewardForStateAndAction(const StateType state, const ActionType action) const
-        {
-            return this->mRewardPolicy.getRewardForStateAndAction(state, action);
-        }
-
         void setDiscountFactor(const ValueType& discountFactor)
         {
             this->mLearningPolicy.setDiscountFactor(discountFactor);
@@ -307,11 +301,6 @@ namespace tinymind {
         void setRandomActionDecisionPoint(const size_t randomActionDecisionPoint)
         {
             this->mRandomNumberPolicy.setRandomActionDecisionPoint(randomActionDecisionPoint);
-        }
-
-        void setRewardForStateAndAction(const StateType state, const ActionType action, const ValueType& reward)
-        {
-            this->mRewardPolicy.setRewardForStateAndAction(state, action, reward);
         }
 
         bool shouldChooseRandomAction()
@@ -337,7 +326,6 @@ namespace tinymind {
         }
     protected:
         RandomNumberPolicy mRandomNumberPolicy;
-        RewardPolicy mRewardPolicy;
         LearningPolicy mLearningPolicy;
     private:
         unsigned char mActionsBuffer[sizeof(ActionType) * NumberOfActions];
@@ -409,21 +397,11 @@ namespace tinymind {
         typedef typename EnvironmentType::EnvironmentActionType ActionType;
         typedef typename EnvironmentType::EnvironmentValueType ValueType;
 
-        static const size_t NumberOfStates = EnvironmentType::EnvironmentNumberOfStates;
-        static const size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
+        static constexpr size_t NumberOfStates = EnvironmentType::EnvironmentNumberOfStates;
+        static constexpr size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
 
         QValueTablePolicy()
         {
-            size_t bufferIndex = 0;
-
-            for(StateType state = 0;state < NumberOfStates;++state)
-            {
-                for(ActionType action = 0;action < NumberOfActions;++action)
-                {
-                    new(&this->mQTableBuffer[bufferIndex]) ValueType(0);
-                    bufferIndex += sizeof(ValueType);
-                }
-            }
         }
 
         ValueType getQValue(const StateType state, const ActionType action) const
@@ -443,6 +421,22 @@ namespace tinymind {
             else
             {
                 return 0;
+            }
+        }
+
+        ValueType getFutureQValue(const StateType state, const ActionType action) const
+        {
+            return this->getQValue(state, action);
+        }
+
+        void init(const EnvironmentType& environment)
+        {
+            for(StateType state = 0;state < NumberOfStates;++state)
+            {
+                for(ActionType action = 0;action < NumberOfActions;++action)
+                {
+                    this->setQValue(state, action, environment.getInitialQTableValue());
+                }
             }
         }
 
@@ -466,8 +460,85 @@ namespace tinymind {
         unsigned char mQTableBuffer[sizeof(ValueType) * NumberOfStates * NumberOfActions];
     };
 
+    template<typename EnvironmentType, typename NeuralNetworkType, size_t NumberOfIterationsBeforeTargetNetworkUpdate>
+    class QValueNeuralNetworkPolicy
+    {
+    public:
+        typedef typename EnvironmentType::EnvironmentStateType StateType;
+        typedef typename EnvironmentType::EnvironmentActionType ActionType;
+        typedef typename EnvironmentType::EnvironmentValueType ValueType;
+
+        static constexpr size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
+        static constexpr size_t NumberOfInputLayerNeurons = NeuralNetworkType::NumberOfInputLayerNeurons;
+
+        QValueNeuralNetworkPolicy() : mIterations(0)
+        {
+        }
+
+        ValueType getQValue(const StateType state, const ActionType action) const
+        {
+            ValueType learnedValues[NumberOfActions];
+
+            this->mNeuralNet.getLearnedValues(&learnedValues[0]);
+
+            return learnedValues[action];
+        }
+
+        ValueType getFutureQValue(const StateType state, const ActionType action)
+        {
+            ValueType learnedValues[NumberOfActions];
+            ValueType inputs[NumberOfInputLayerNeurons];
+
+            EnvironmentType::getInputValues(state, &inputs[0]);
+
+            this->mTargetNeuralNet.feedForward(&inputs[0]);
+            this->mTargetNeuralNet.getLearnedValues(&learnedValues[0]);
+
+            return learnedValues[action];
+        }
+
+        void init(const EnvironmentType& environment)
+        {
+        }
+
+        void setQValue(const StateType state, const ActionType action, const ValueType& value)
+        {
+            ValueType values[NumberOfActions];
+            ValueType inputs[NumberOfInputLayerNeurons];
+            ValueType error;
+
+            EnvironmentType::getInputValues(state, &inputs[0]);
+
+            this->mNeuralNet.feedForward(&inputs[0]);
+            this->mNeuralNet.getLearnedValues(&values[0]);
+
+            values[action] = value;
+
+            error = this->mNeuralNet.calculateError(&values[0]);
+            if (!NeuralNetworkType::NeuralNetworkTransferFunctionsPolicy::isWithinZeroTolerance(error))
+            {
+                this->mNeuralNet.trainNetwork(&values[0]);
+                ++mIterations;
+                if(mIterations >= NumberOfIterationsBeforeTargetNetworkUpdate)
+                {
+                    mIterations = 0;
+                    this->copyNetworkWeights();
+                }
+            }
+        }
+    private:
+        void copyNetworkWeights()
+        {
+            this->mTargetNeuralNet.setWeights(this->mNeuralNet);
+        }
+    private:
+        size_t mIterations;
+        NeuralNetworkType mNeuralNet;
+        NeuralNetworkType mTargetNeuralNet;
+    };
+
     template<   typename EnvironmentType,
-                template<typename> class QLearnerQValuePolicy = QValueTablePolicy,
+                typename QValuePolicy = QValueTablePolicy<EnvironmentType>,
                 template<typename, typename> class QLearnerStateToActionPolicy = ArgMaxPolicy
             >
     class QLearner
@@ -477,13 +548,12 @@ namespace tinymind {
         typedef typename EnvironmentType::EnvironmentActionType ActionType;
         typedef typename EnvironmentType::EnvironmentValueType ValueType;
         typedef typename EnvironmentType::experience_t experience_t;
-        typedef QLearnerQValuePolicy<EnvironmentType> QValuePolicy;
         typedef QLearnerStateToActionPolicy<EnvironmentType, QValuePolicy> StateToActionPolicy;
 
-        static const size_t NumberOfStates = EnvironmentType::EnvironmentNumberOfStates;
-        static const size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
-        static const StateType InvalidState = EnvironmentType::EnvironmentInvalidState;
-        static const ActionType InvalidAction = EnvironmentType::EnvironmentInvalidAction;
+        static constexpr size_t NumberOfStates = EnvironmentType::EnvironmentNumberOfStates;
+        static constexpr size_t NumberOfActions = EnvironmentType::EnvironmentNumberOfActions;
+        static constexpr StateType InvalidState = EnvironmentType::EnvironmentInvalidState;
+        static constexpr ActionType InvalidAction = EnvironmentType::EnvironmentInvalidAction;
 
         QLearner(const ValueType& learningRate, const ValueType& discountFactor, const size_t randomActionDecisionPoint) : 
             mEnvironment(learningRate, discountFactor, randomActionDecisionPoint), mState(InvalidState)
@@ -496,13 +566,7 @@ namespace tinymind {
                 bufferIndex += sizeof(ActionType);
             }
 
-            for(StateType state = 0;state < NumberOfStates;++state)
-            {
-                for(ActionType action = 0;action < NumberOfActions;++action)
-                {
-                    this->mQValuePolicy.setQValue(state, action, this->mEnvironment.getInitialQTableValue());
-                }
-            }
+            this->mQValuePolicy.init(this->mEnvironment);
         }
 
         EnvironmentType& getEnvironment()
@@ -601,7 +665,7 @@ namespace tinymind {
             }
             else
             {
-                qValue = this->mQValuePolicy.getQValue(state, action);
+                qValue = this->mQValuePolicy.getFutureQValue(state, action);
             }
 
             return qValue;
@@ -637,8 +701,8 @@ namespace tinymind {
 
         static_assert(NumberOfStates > 1, "Invalid number of states.");
         static_assert(NumberOfActions > 1, "Invalid number of actions.");
-        static_assert((limits<StateType>::max > (NumberOfStates - 1)), "State type too small to hold number of states. Max value reserved for invalid state.");
-        static_assert((limits<ActionType>::max > (NumberOfActions - 1)), "Action type too small to hold number of actions. Max value reserved for invalid action.");
+        static_assert((tinymind::limits<StateType>::max > (NumberOfStates - 1)), "State type too small to hold number of states. Max value reserved for invalid state.");
+        static_assert((tinymind::limits<ActionType>::max > (NumberOfActions - 1)), "Action type too small to hold number of actions. Max value reserved for invalid action.");
         static_assert(IsSigned<StateType>::result == false, "Must use an unsigned type to represent states.");
         static_assert(IsSigned<ActionType>::result == false, "Must use an unsigned type to represent actions.");
     };

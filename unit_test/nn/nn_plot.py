@@ -22,7 +22,6 @@
 
 import os
 import sys
-import itertools
 
 import matplotlib.pyplot as pyplot
 
@@ -45,13 +44,11 @@ if __name__ == '__main__':
             data.extend([float(value) for value in s])
             line = f.readline()
 
-    colors=itertools.cycle('bcmk').next
-    shapes=itertools.cycle('*xov^>8sp<pP').next
     pyplot.figure()
     pyplot.suptitle("%s\n%s" % ("NN Plot", fileName))
     index = 0
-    rows = len(names) / 4
-    cols = (len(names) / rows) + (len(names) % rows)
+    rows = int(len(names) / 4)
+    cols = int((len(names) / rows) + (len(names) % rows))
     xax = None
     for row in range(rows):
         for col in range(cols):
@@ -62,7 +59,7 @@ if __name__ == '__main__':
                 else:
                     ax = pyplot.subplot2grid((rows,cols), (row,col))
                     xax = ax
-                ax.plot(range(len(values)), values, colors() + '-' + shapes(), label = names[index])
+                ax.plot(range(len(values)), values, label = names[index])
                 ax.grid(True)
                 ax.set_title(names[index], fontsize=7)
                 ax.tick_params(labelsize=6)

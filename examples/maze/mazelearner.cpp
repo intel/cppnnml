@@ -20,18 +20,8 @@
 * SOFTWARE.
 */
 
-#pragma once
+#include "mazelearner.h"
 
-namespace tinymind {
-    template<uint64_t value>
-    struct NumBitsForValue
-    {
-        static const size_t result = 1 + NumBitsForValue<(value >> 1)>::result;
-    };
-
-    template<>
-    struct NumBitsForValue<0>
-    {
-        static const size_t result = 0;
-    };
-}
+#define LEARNING_RATE (QValueType(1,0) / QValueType(5,0))
+#define DISCOUNT_FACTOR (QValueType(8,0) / QValueType(10,0))
+QLearnerType qLearner(LEARNING_RATE, DISCOUNT_FACTOR, 100);
