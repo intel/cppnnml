@@ -1023,6 +1023,26 @@ namespace tinymind {
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
+    struct GatedBackPropagationThruTimePolicy : public BackPropagationParent<TransferFunctionsPolicy, BatchSize>
+    {
+        typedef typename TransferFunctionsPolicy::TransferFunctionsValueType ValueType;
+
+        template<typename NNType>
+        void trainNetwork(NNType& nn, ValueType const* const targetValues)
+        {
+            typedef RecurrentNetworkDeltasCalculator<NNType> NetworkDeltasCalculatorType;
+            typedef RecurrentNetworkGradientsCalculator<NNType> NetworkGradientsCalculatorType;
+            typedef BackPropThruTimeConnectionWeightUpdater<NNType> BackPropConnectionWeightUpdaterType;
+
+            NetworkDeltasCalculatorType::calculateNetworkDeltas(nn, targetValues);
+
+            NetworkGradientsCalculatorType::calculateNetworkGradients(nn);
+
+            BackPropConnectionWeightUpdaterType::updateConnectionWeights(*this, nn);
+        }
+    };
+
+    template<typename TransferFunctionsPolicy, size_t BatchSize>
     struct ClassifierBackPropagationPolicy : public BackPropagationParent<TransferFunctionsPolicy, BatchSize>
     {
         typedef typename TransferFunctionsPolicy::TransferFunctionsValueType ValueType;
@@ -1130,13 +1150,13 @@ namespace tinymind {
     template<typename TransferFunctionsPolicy, size_t BatchSize>
     struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, GRUHiddenLayerConfig, true, FeedForwardOutputLayerConfiguration>
     {
-        typedef BackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
+        typedef GatedBackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
     struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, LSTMHiddenLayerConfig, true, FeedForwardOutputLayerConfiguration>
     {
-        typedef BackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
+        typedef GatedBackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
