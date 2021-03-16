@@ -1104,55 +1104,55 @@ namespace tinymind {
         }
     };
 
-    template<typename TransferFunctionsPolicy, size_t BatchSize, bool HasRecurrentLayer, bool IsTrainable, outputLayerConfiguration_e OutputLayerConfiguration>
+    template<typename TransferFunctionsPolicy, size_t BatchSize, bool HasRecurrentLayer, hiddenLayerConfiguration_e hiddenLayerConfiguration, bool IsTrainable, outputLayerConfiguration_e OutputLayerConfiguration>
     struct BackPropTrainingPolicySelector
     {
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, true, FeedForwardOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfig, true, FeedForwardOutputLayerConfiguration>
     {
         typedef BackPropagationPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, true, ClassifierOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfig, true, ClassifierOutputLayerConfiguration>
     {
         typedef ClassifierBackPropagationPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, true, FeedForwardOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, RecurrentHiddenLayerConfig, true, FeedForwardOutputLayerConfiguration>
     {
         typedef BackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, true, ClassifierOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, NonRecurrentHiddenLayerConfig, true, ClassifierOutputLayerConfiguration>
     {
         typedef ClassifierBackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, false, FeedForwardOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfig, false, FeedForwardOutputLayerConfiguration>
     {
         typedef NullTrainingPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, false, ClassifierOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfig, false, ClassifierOutputLayerConfiguration>
     {
         typedef NullTrainingPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, false, FeedForwardOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, NonRecurrentHiddenLayerConfig, false, FeedForwardOutputLayerConfiguration>
     {
         typedef NullTrainingPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, false, ClassifierOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, NonRecurrentHiddenLayerConfig, false, ClassifierOutputLayerConfiguration>
     {
         typedef NullTrainingPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
@@ -2261,10 +2261,13 @@ namespace tinymind {
             ValueType forgetGateActivation;
             ValueType outputGateActivation;
             ValueType output;
+            ValueType cellStateSigmoidActivation;
             ValueType cellState;
             ValueType previousCellState;
-            ValueType input;
-            ValueType forget;
+            ValueType inputValue;
+            ValueType recurrentValue;
+            ValueType biasValue;
+            ValueType gateInputValue;
             ValueType sum;
 
             for (size_t neuron = 0; neuron < NumberOfNeurons; ++neuron)
@@ -2272,31 +2275,27 @@ namespace tinymind {
                 bufferIndex = neuron * sizeof(NeuronType);
                 pNeuron = reinterpret_cast<NeuronType*>(&this->mNeuronsBuffer[bufferIndex]);
 
+                recurrentValue = recurrentLayer.getOutputValueForOutgoingConnection(neuron);
+                inputValue = previousLayer.getOutputValueForOutgoingConnection(neuron);
+                biasValue = previousLayer.getBiasNeuronValueForOutgoingConnection(neuron);
+                gateInputValue = (inputValue + recurrentValue + biasValue);
+
                 previousCellState = pNeuron->getState();
-                cellState = previousCellState;
 
-                input = previousLayer.getBiasNeuronValueForOutgoingConnection(neuron);
+                forgetGateActivation = ForgetGateActivationPolicy::activationFunction(gateInputValue);
+                inputGateActivation = InputGateActivationPolicy::activationFunction(gateInputValue);
+                cellStateSigmoidActivation = CellStateActivationPolicy::activationFunction(gateInputValue);
+                outputGateActivation = OutputGateActivationPolicy::activationFunction(gateInputValue);
 
-                input += previousLayer.getOutputValueForOutgoingConnection(neuron);
-
-                input += recurrentLayer.getOutputValueForOutgoingConnection(neuron);
-
-                forget = (input + previousCellState);
-                forgetGateActivation = ForgetGateActivationPolicy::activationFunction(forget);
-
-                inputActivation = TransferFunctionsPolicy::hiddenNeuronActivationFunction(sum);
-                inputGateActivation = InputGateActivationPolicy::activationFunction(sum);
-                outputGateActivation = OutputGateActivationPolicy::activationFunction(sum);
-
-                input = (inputActivation * inputGateActivation);
-                forget = (forgetGateActivation * previousCellState);
-                cellState = (input + forget);
+                cellState = (previousCellState * forgetGateActivation);
+                cellState += (cellStateSigmoidActivation * inputActivation);
                 pNeuron->setState(cellState);
+
                 output = CellStateActivationPolicy::activationFunction(cellState);
                 output *= outputGateActivation;
 
                 pNeuron->setOutputValue(output);
-                
+
                 recurrentLayer.setOutputValueForOutgoingConnection(neuron, output);
             }
         }
@@ -2730,6 +2729,7 @@ namespace tinymind {
                                                         TransferFunctionsPolicy,
                                                         BatchSize,
                                                         HasRecurrentLayer,
+                                                        HiddenLayerConfig,
                                                         IsTrainable,
                                                         OutputLayerConfiguration>::TrainingPolicyType TrainingPolicyType;
 
@@ -3137,5 +3137,49 @@ namespace tinymind {
                                                                 BatchSize
                                                                 >
     {
+    };
+
+    /**
+     * LSTM Network
+     */
+    template<
+            typename ValueType,
+            size_t NumberOfInputs,
+            size_t NumberOfHiddenLayers,
+            size_t NumberOfNeuronsInHiddenLayers,
+            size_t NumberOfOutputs,
+            typename TransferFunctionsPolicy,
+            bool IsTrainable = true,
+            size_t BatchSize = 1,
+            bool HasRecurrentLayer = true,
+            hiddenLayerConfiguration_e HiddenLayerConfig = LSTMHiddenLayerConfig,
+            size_t RecurrentConnectionDepth = 1,
+            outputLayerConfiguration_e OutputLayerConfiguration = FeedForwardOutputLayerConfiguration
+            >
+    class LstmMultilayerPerceptron : public MultilayerPerceptron<   ValueType,
+                                                                    NumberOfInputs,
+                                                                    NumberOfHiddenLayers,
+                                                                    NumberOfNeuronsInHiddenLayers,
+                                                                    NumberOfOutputs, 
+                                                                    TransferFunctionsPolicy,
+                                                                    IsTrainable,
+                                                                    BatchSize,
+                                                                    HasRecurrentLayer,
+                                                                    HiddenLayerConfig,
+                                                                    RecurrentConnectionDepth,
+                                                                    OutputLayerConfiguration
+                                                                    >
+    {
+    public:
+        void feedForward(ValueType const* const values)
+        {
+            this->feedForwardInputLayer(values);
+            
+            this->mLastHiddenLayer.feedForward(this->mInputLayer, this->mRecurrentLayer);
+            
+            this->feedForwardOutputLayer();
+        }
+    private:
+        static_assert(RecurrentConnectionDepth > 0, "Invalid recurrent connection depth.");
     };
 }
