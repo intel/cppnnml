@@ -1128,6 +1128,18 @@ namespace tinymind {
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, GRUHiddenLayerConfig, true, FeedForwardOutputLayerConfiguration>
+    {
+        typedef BackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
+    };
+
+    template<typename TransferFunctionsPolicy, size_t BatchSize>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, LSTMHiddenLayerConfig, true, FeedForwardOutputLayerConfiguration>
+    {
+        typedef BackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
+    };
+
+    template<typename TransferFunctionsPolicy, size_t BatchSize>
     struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, NonRecurrentHiddenLayerConfig, true, ClassifierOutputLayerConfiguration>
     {
         typedef ClassifierBackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
