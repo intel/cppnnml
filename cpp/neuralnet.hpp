@@ -2218,7 +2218,7 @@ namespace tinymind {
         typedef TanhActivationPolicy<ValueType> CellStateActivationPolicy;
 
         static constexpr size_t NumberOfNeuronsInLayer = NumberOfNeurons;
-        static constexpr size_t NumberOfBiasNeuronsInLayer = 0;
+        static constexpr size_t NumberOfBiasNeuronsInLayer = 1;
 
         template<typename PreviousLayerType, typename RecurrentLayerType>
         void feedForward(const PreviousLayerType& previousLayer, RecurrentLayerType& recurrentLayer)
@@ -2281,7 +2281,7 @@ namespace tinymind {
         typedef TanhActivationPolicy<ValueType> CellStateActivationPolicy;
         
         static constexpr size_t NumberOfNeuronsInLayer = NumberOfNeurons;
-        static constexpr size_t NumberOfBiasNeuronsInLayer = 0;
+        static constexpr size_t NumberOfBiasNeuronsInLayer = 1;
 
         template<typename PreviousLayerType, typename RecurrentLayerType>
         void feedForward(const PreviousLayerType& previousLayer, RecurrentLayerType& recurrentLayer)
