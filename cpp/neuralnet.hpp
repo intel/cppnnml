@@ -502,19 +502,31 @@ namespace tinymind {
         }
     };
 
-    template<typename TransferFunctionsPolicy, typename OutputLayerType, outputLayerConfiguration_e OutputLayerConfiguration>
+    template<typename TransferFunctionsPolicy, typename OutputLayerType, hiddenLayerConfiguration_e hiddenLayerConfiguration, outputLayerConfiguration_e OutputLayerConfiguration>
     struct OutputLayerNodeDeltasCalculatorChooser
     {
     };
 
     template<typename TransferFunctionsPolicy, typename OutputLayerType>
-    struct OutputLayerNodeDeltasCalculatorChooser<TransferFunctionsPolicy, OutputLayerType, FeedForwardOutputLayerConfiguration>
+    struct OutputLayerNodeDeltasCalculatorChooser<TransferFunctionsPolicy, OutputLayerType, NonRecurrentHiddenLayerConfig, FeedForwardOutputLayerConfiguration>
     {
         typedef OutputLayerNodeDeltasCalculator<TransferFunctionsPolicy, OutputLayerType> OutputLayerNodeDeltasCalculatorType;
     };
 
     template<typename TransferFunctionsPolicy, typename OutputLayerType>
-    struct OutputLayerNodeDeltasCalculatorChooser<TransferFunctionsPolicy, OutputLayerType, ClassifierOutputLayerConfiguration>
+    struct OutputLayerNodeDeltasCalculatorChooser<TransferFunctionsPolicy, OutputLayerType, NonRecurrentHiddenLayerConfig, ClassifierOutputLayerConfiguration>
+    {
+        typedef ClassificationOutputLayerNodeDeltasCalculator<TransferFunctionsPolicy, OutputLayerType> OutputLayerNodeDeltasCalculatorType;
+    };
+
+    template<typename TransferFunctionsPolicy, typename OutputLayerType>
+    struct OutputLayerNodeDeltasCalculatorChooser<TransferFunctionsPolicy, OutputLayerType, RecurrentHiddenLayerConfig, FeedForwardOutputLayerConfiguration>
+    {
+        typedef OutputLayerNodeDeltasCalculator<TransferFunctionsPolicy, OutputLayerType> OutputLayerNodeDeltasCalculatorType;
+    };
+
+    template<typename TransferFunctionsPolicy, typename OutputLayerType>
+    struct OutputLayerNodeDeltasCalculatorChooser<TransferFunctionsPolicy, OutputLayerType, RecurrentHiddenLayerConfig, ClassifierOutputLayerConfiguration>
     {
         typedef ClassificationOutputLayerNodeDeltasCalculator<TransferFunctionsPolicy, OutputLayerType> OutputLayerNodeDeltasCalculatorType;
     };
@@ -532,6 +544,7 @@ namespace tinymind {
         typedef typename OutputLayerNodeDeltasCalculatorChooser<
                         TransferFunctionsPolicy,
                         OutputLayerType,
+                        NeuralNetworkType::NeuralNetworkHiddenLayerConfiguration,
                         NeuralNetworkType::NeuralNetworkOutputLayerConfiguration>::OutputLayerNodeDeltasCalculatorType OutputLayerNodeDeltasCalculatorType;
         
         static void calculateNetworkDeltas(NeuralNetworkType& nn, ValueType const* const targetValues)
@@ -569,6 +582,7 @@ namespace tinymind {
         typedef typename OutputLayerNodeDeltasCalculatorChooser<
                         TransferFunctionsPolicy,
                         OutputLayerType,
+                        NeuralNetworkType::NeuralNetworkHiddenLayerConfiguration,
                         NeuralNetworkType::NeuralNetworkOutputLayerConfiguration>::OutputLayerNodeDeltasCalculatorType OutputLayerNodeDeltasCalculatorType;
         
         static void calculateNetworkDeltas(NeuralNetworkType& nn, ValueType const* const targetValues)
@@ -600,6 +614,7 @@ namespace tinymind {
         typedef typename OutputLayerNodeDeltasCalculatorChooser<
                         TransferFunctionsPolicy,
                         OutputLayerType,
+                        NeuralNetworkType::NeuralNetworkHiddenLayerConfiguration,
                         NeuralNetworkType::NeuralNetworkOutputLayerConfiguration>::OutputLayerNodeDeltasCalculatorType OutputLayerNodeDeltasCalculatorType;
         
         static void calculateNetworkDeltas(NeuralNetworkType& nn, ValueType const* const targetValues)
@@ -629,6 +644,7 @@ namespace tinymind {
         typedef typename OutputLayerNodeDeltasCalculatorChooser<
                         TransferFunctionsPolicy,
                         OutputLayerType,
+                        NeuralNetworkType::NeuralNetworkHiddenLayerConfiguration,
                         NeuralNetworkType::NeuralNetworkOutputLayerConfiguration>::OutputLayerNodeDeltasCalculatorType OutputLayerNodeDeltasCalculatorType;
 
         static constexpr size_t RecurrentConnectionDepth = RecurrentLayerType::RecurrentLayerRecurrentConnectionDepth;
@@ -2770,6 +2786,7 @@ namespace tinymind {
         static constexpr size_t NumberOfInputLayerNeurons = InputLayerType::NumberOfNeuronsInLayer;
         static constexpr size_t NumberOfHiddenLayerNeurons = LastHiddenLayerType::NumberOfNeuronsInLayer;
         static constexpr size_t NumberOfOutputLayerNeurons = NeuralNetworkOutputLayerType::NumberOfNeuronsInLayer;
+        static constexpr hiddenLayerConfiguration_e NeuralNetworkHiddenLayerConfiguration = HiddenLayerConfig;
         static constexpr size_t NeuralNetworkRecurrentConnectionDepth = NeuralNetworkRecurrentLayerType::RecurrentLayerRecurrentConnectionDepth;
         static constexpr size_t NeuralNetworkBatchSize = BatchSize;
         static constexpr outputLayerConfiguration_e NeuralNetworkOutputLayerConfiguration = OutputLayerConfiguration;
