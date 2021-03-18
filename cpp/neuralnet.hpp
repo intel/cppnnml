@@ -33,10 +33,10 @@ namespace tinymind {
 
     typedef enum
     {
-        NonRecurrentHiddenLayerConfig,
-        RecurrentHiddenLayerConfig,
-        GRUHiddenLayerConfig,
-        LSTMHiddenLayerConfig,
+        NonRecurrentHiddenLayerConfiguration,
+        RecurrentHiddenLayerConfiguration,
+        GRUHiddenLayerConfiguration,
+        LSTMHiddenLayerConfiguration,
     } hiddenLayerConfiguration_e;
 
     template<typename ValueType, size_t NumberOfGradients, size_t BatchSize>
@@ -428,11 +428,37 @@ namespace tinymind {
         }
     };
 
-    template<typename TransferFunctionsPolicy>
+    template<typename TransferFunctionsPolicy, hiddenLayerConfiguration_e HiddenLayerConfiguration>
     struct NodeDeltasCalculator
     {
         typedef typename TransferFunctionsPolicy::TransferFunctionsValueType ValueType;
         
+        template<typename LayerType, typename NextLayerType>
+        static void calculateAndSetNodeDeltas(LayerType& layer, const NextLayerType& nextLayer)
+        {
+            ValueType sum;
+            ValueType nodeDelta;
+                
+            for(size_t neuron = 0; neuron < LayerType::NumberOfNeuronsInLayer;++neuron)
+            {
+                sum = 0;
+                for (size_t nextNeuron = 0; nextNeuron < NextLayerType::NumberOfNeuronsInLayer; ++nextNeuron)
+                {
+                    sum += (layer.getWeightForNeuronAndConnection(neuron, nextNeuron) * nextLayer.getNodeDeltaForNeuron(nextNeuron));
+                }
+                
+                nodeDelta = sum * TransferFunctionsPolicy::hiddenNeuronActivationFunctionDerivative(layer.getOutputValueForNeuron(neuron));
+                
+                layer.setNodeDeltaForNeuron(neuron, nodeDelta);
+            }
+        }
+    };
+
+    template<typename TransferFunctionsPolicy>
+    struct NodeDeltasCalculator<TransferFunctionsPolicy, LSTMHiddenLayerConfiguration>
+    {
+        typedef typename TransferFunctionsPolicy::TransferFunctionsValueType ValueType;
+
         template<typename LayerType, typename NextLayerType>
         static void calculateAndSetNodeDeltas(LayerType& layer, const NextLayerType& nextLayer)
         {
@@ -528,7 +554,7 @@ namespace tinymind {
         typedef typename NeuralNetworkType::LastHiddenLayerType LastHiddenLayerType;
         typedef typename NeuralNetworkType::NeuralNetworkOutputLayerType OutputLayerType;
         typedef typename NeuralNetworkType::NeuralNetworkTransferFunctionsPolicy TransferFunctionsPolicy;
-        typedef NodeDeltasCalculator<TransferFunctionsPolicy> NodeDeltasCalculatorType;
+        typedef NodeDeltasCalculator<TransferFunctionsPolicy, NeuralNetworkType::NeuralNetworkHiddenLayerConfiguration> NodeDeltasCalculatorType;
         typedef typename OutputLayerNodeDeltasCalculatorChooser<
                         TransferFunctionsPolicy,
                         OutputLayerType,
@@ -565,7 +591,7 @@ namespace tinymind {
         typedef typename NeuralNetworkType::LastHiddenLayerType LastHiddenLayerType;
         typedef typename NeuralNetworkType::NeuralNetworkOutputLayerType OutputLayerType;
         typedef typename NeuralNetworkType::NeuralNetworkTransferFunctionsPolicy TransferFunctionsPolicy;
-        typedef NodeDeltasCalculator<TransferFunctionsPolicy> NodeDeltasCalculatorType;
+        typedef NodeDeltasCalculator<TransferFunctionsPolicy, NeuralNetworkType::NeuralNetworkHiddenLayerConfiguration> NodeDeltasCalculatorType;
         typedef typename OutputLayerNodeDeltasCalculatorChooser<
                         TransferFunctionsPolicy,
                         OutputLayerType,
@@ -596,7 +622,7 @@ namespace tinymind {
         typedef typename NeuralNetworkType::LastHiddenLayerType LastHiddenLayerType;
         typedef typename NeuralNetworkType::NeuralNetworkOutputLayerType OutputLayerType;
         typedef typename NeuralNetworkType::NeuralNetworkTransferFunctionsPolicy TransferFunctionsPolicy;
-        typedef NodeDeltasCalculator<TransferFunctionsPolicy> NodeDeltasCalculatorType;
+        typedef NodeDeltasCalculator<TransferFunctionsPolicy, NeuralNetworkType::NeuralNetworkHiddenLayerConfiguration> NodeDeltasCalculatorType;
         typedef typename OutputLayerNodeDeltasCalculatorChooser<
                         TransferFunctionsPolicy,
                         OutputLayerType,
@@ -625,7 +651,7 @@ namespace tinymind {
         typedef typename NeuralNetworkType::LastHiddenLayerType LastHiddenLayerType;
         typedef typename NeuralNetworkType::NeuralNetworkOutputLayerType OutputLayerType;
         typedef typename NeuralNetworkType::NeuralNetworkTransferFunctionsPolicy TransferFunctionsPolicy;
-        typedef NodeDeltasCalculator<TransferFunctionsPolicy> NodeDeltasCalculatorType;
+        typedef NodeDeltasCalculator<TransferFunctionsPolicy, NeuralNetworkType::NeuralNetworkHiddenLayerConfiguration> NodeDeltasCalculatorType;
         typedef typename OutputLayerNodeDeltasCalculatorChooser<
                         TransferFunctionsPolicy,
                         OutputLayerType,
@@ -1130,61 +1156,61 @@ namespace tinymind {
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfig, true, FeedForwardOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfiguration, true, FeedForwardOutputLayerConfiguration>
     {
         typedef BackPropagationPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfig, true, ClassifierOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfiguration, true, ClassifierOutputLayerConfiguration>
     {
         typedef ClassifierBackPropagationPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, RecurrentHiddenLayerConfig, true, FeedForwardOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, RecurrentHiddenLayerConfiguration, true, FeedForwardOutputLayerConfiguration>
     {
         typedef BackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, GRUHiddenLayerConfig, true, FeedForwardOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, GRUHiddenLayerConfiguration, true, FeedForwardOutputLayerConfiguration>
     {
         typedef GatedBackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, LSTMHiddenLayerConfig, true, FeedForwardOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, LSTMHiddenLayerConfiguration, true, FeedForwardOutputLayerConfiguration>
     {
         typedef GatedBackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, NonRecurrentHiddenLayerConfig, true, ClassifierOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, NonRecurrentHiddenLayerConfiguration, true, ClassifierOutputLayerConfiguration>
     {
         typedef ClassifierBackPropagationThruTimePolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfig, false, FeedForwardOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfiguration, false, FeedForwardOutputLayerConfiguration>
     {
         typedef NullTrainingPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfig, false, ClassifierOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, false, NonRecurrentHiddenLayerConfiguration, false, ClassifierOutputLayerConfiguration>
     {
         typedef NullTrainingPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, NonRecurrentHiddenLayerConfig, false, FeedForwardOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, NonRecurrentHiddenLayerConfiguration, false, FeedForwardOutputLayerConfiguration>
     {
         typedef NullTrainingPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
 
     template<typename TransferFunctionsPolicy, size_t BatchSize>
-    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, NonRecurrentHiddenLayerConfig, false, ClassifierOutputLayerConfiguration>
+    struct BackPropTrainingPolicySelector<TransferFunctionsPolicy, BatchSize, true, NonRecurrentHiddenLayerConfiguration, false, ClassifierOutputLayerConfiguration>
     {
         typedef NullTrainingPolicy<TransferFunctionsPolicy, BatchSize> TrainingPolicyType;
     };
@@ -1631,7 +1657,7 @@ namespace tinymind {
             size_t NumberOfOutgoingConnections,
             typename TransferFunctionsPolicy,
             bool IsTrainable,
-            hiddenLayerConfiguration_e HiddenLayerConfig = NonRecurrentHiddenLayerConfig
+            hiddenLayerConfiguration_e HiddenLayerConfiguration = NonRecurrentHiddenLayerConfiguration
             >
     struct HiddenLayerNeuronTypeSelector
     {
@@ -1642,7 +1668,7 @@ namespace tinymind {
             size_t NumberOfOutgoingConnections,
             typename TransferFunctionsPolicy
             >
-    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, true, NonRecurrentHiddenLayerConfig>
+    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, true, NonRecurrentHiddenLayerConfiguration>
     {
         typedef TrainableHiddenLayerNeuron<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy> HiddenLayerNeuronType;
     };
@@ -1652,7 +1678,7 @@ namespace tinymind {
             size_t NumberOfOutgoingConnections,
             typename TransferFunctionsPolicy
             >
-    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, false, NonRecurrentHiddenLayerConfig>
+    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, false, NonRecurrentHiddenLayerConfiguration>
     {
         typedef HiddenLayerNeuron<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy> HiddenLayerNeuronType;
     };
@@ -1662,7 +1688,7 @@ namespace tinymind {
             size_t NumberOfOutgoingConnections,
             typename TransferFunctionsPolicy
             >
-    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, true, RecurrentHiddenLayerConfig>
+    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, true, RecurrentHiddenLayerConfiguration>
     {
         typedef TrainableHiddenLayerNeuron<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy> HiddenLayerNeuronType;
     };
@@ -1672,7 +1698,7 @@ namespace tinymind {
             size_t NumberOfOutgoingConnections,
             typename TransferFunctionsPolicy
             >
-    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, false, RecurrentHiddenLayerConfig>
+    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, false, RecurrentHiddenLayerConfiguration>
     {
         typedef HiddenLayerNeuron<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy> HiddenLayerNeuronType;
     };
@@ -1682,7 +1708,7 @@ namespace tinymind {
             size_t NumberOfOutgoingConnections,
             typename TransferFunctionsPolicy
             >
-    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, true, GRUHiddenLayerConfig>
+    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, true, GRUHiddenLayerConfiguration>
     {
         typedef TrainableGruHiddenLayerNeuron<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy> HiddenLayerNeuronType;
     };
@@ -1692,7 +1718,7 @@ namespace tinymind {
             size_t NumberOfOutgoingConnections,
             typename TransferFunctionsPolicy
             >
-    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, false, GRUHiddenLayerConfig>
+    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, false, GRUHiddenLayerConfiguration>
     {
         typedef GruHiddenLayerNeuron<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy> HiddenLayerNeuronType;
     };
@@ -1702,7 +1728,7 @@ namespace tinymind {
             size_t NumberOfOutgoingConnections,
             typename TransferFunctionsPolicy
             >
-    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, true, LSTMHiddenLayerConfig>
+    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, true, LSTMHiddenLayerConfiguration>
     {
         typedef TrainableLstmHiddenLayerNeuron<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy> HiddenLayerNeuronType;
     };
@@ -1712,7 +1738,7 @@ namespace tinymind {
             size_t NumberOfOutgoingConnections,
             typename TransferFunctionsPolicy
             >
-    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, false, LSTMHiddenLayerConfig>
+    struct HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy, false, LSTMHiddenLayerConfiguration>
     {
         typedef LstmHiddenLayerNeuron<ConnectionType, NumberOfOutgoingConnections, TransferFunctionsPolicy> HiddenLayerNeuronType;
     };
@@ -2596,71 +2622,71 @@ namespace tinymind {
         }
     };
 
-    template<typename ConnectionType, size_t NumberOfHiddenLayers, size_t NumberOfNeuronsInHiddenLayers, size_t NumberOfOutputs, typename TransferFunctionsPolicy, hiddenLayerConfiguration_e HiddenLayerConfig>
+    template<typename ConnectionType, size_t NumberOfHiddenLayers, size_t NumberOfNeuronsInHiddenLayers, size_t NumberOfOutputs, typename TransferFunctionsPolicy, hiddenLayerConfiguration_e HiddenLayerConfiguration>
     struct HiddenLayerTypeSelector
     {
     };
 
     template<typename ConnectionType, size_t NumberOfHiddenLayers, size_t NumberOfNeuronsInHiddenLayers, size_t NumberOfOutputs, typename TransferFunctionsPolicy>
-    struct HiddenLayerTypeSelector<ConnectionType, NumberOfHiddenLayers, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, NonRecurrentHiddenLayerConfig>
+    struct HiddenLayerTypeSelector<ConnectionType, NumberOfHiddenLayers, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, NonRecurrentHiddenLayerConfiguration>
     {
-        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfNeuronsInHiddenLayers, TransferFunctionsPolicy, ConnectionType::IsTrainable, NonRecurrentHiddenLayerConfig>::HiddenLayerNeuronType InnerHiddenLayerNeuronType;
+        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfNeuronsInHiddenLayers, TransferFunctionsPolicy, ConnectionType::IsTrainable, NonRecurrentHiddenLayerConfiguration>::HiddenLayerNeuronType InnerHiddenLayerNeuronType;
         typedef HiddenLayer<InnerHiddenLayerNeuronType, NumberOfNeuronsInHiddenLayers> InnerHiddenLayerType;
-        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutputs, TransferFunctionsPolicy, ConnectionType::IsTrainable, NonRecurrentHiddenLayerConfig>::HiddenLayerNeuronType LastHiddenLayerNeuronType;
+        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutputs, TransferFunctionsPolicy, ConnectionType::IsTrainable, NonRecurrentHiddenLayerConfiguration>::HiddenLayerNeuronType LastHiddenLayerNeuronType;
         typedef HiddenLayer<LastHiddenLayerNeuronType, NumberOfNeuronsInHiddenLayers> LastHiddenLayerType;
     };
 
     template<typename ConnectionType, size_t NumberOfHiddenLayers, size_t NumberOfNeuronsInHiddenLayers, size_t NumberOfOutputs, typename TransferFunctionsPolicy>
-    struct HiddenLayerTypeSelector<ConnectionType, NumberOfHiddenLayers, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, RecurrentHiddenLayerConfig>
+    struct HiddenLayerTypeSelector<ConnectionType, NumberOfHiddenLayers, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, RecurrentHiddenLayerConfiguration>
     {
         // TODO: Need to add support for recurrent NNs with > 1 hidden layer
     };
 
     template<typename ConnectionType, size_t NumberOfHiddenLayers, size_t NumberOfNeuronsInHiddenLayers, size_t NumberOfOutputs, typename TransferFunctionsPolicy>
-    struct HiddenLayerTypeSelector<ConnectionType, NumberOfHiddenLayers, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, GRUHiddenLayerConfig>
+    struct HiddenLayerTypeSelector<ConnectionType, NumberOfHiddenLayers, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, GRUHiddenLayerConfiguration>
     {
         // TODO: Need to add support for recurrent NNs with > 1 hidden layer
     };
 
     template<typename ConnectionType, size_t NumberOfHiddenLayers, size_t NumberOfNeuronsInHiddenLayers, size_t NumberOfOutputs, typename TransferFunctionsPolicy>
-    struct HiddenLayerTypeSelector<ConnectionType, NumberOfHiddenLayers, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, LSTMHiddenLayerConfig>
+    struct HiddenLayerTypeSelector<ConnectionType, NumberOfHiddenLayers, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, LSTMHiddenLayerConfiguration>
     {
         // TODO: Need to add support for recurrent NNs with > 1 hidden layer
     };
 
     template<typename ConnectionType, size_t NumberOfNeuronsInHiddenLayers, size_t NumberOfOutputs, typename TransferFunctionsPolicy>
-    struct HiddenLayerTypeSelector<ConnectionType, 1, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, NonRecurrentHiddenLayerConfig>
+    struct HiddenLayerTypeSelector<ConnectionType, 1, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, NonRecurrentHiddenLayerConfiguration>
     {
         typedef typename ConnectionType::ConnectionValueType ValueType;
         typedef NullHiddenLayer<ValueType> InnerHiddenLayerType;
-        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutputs, TransferFunctionsPolicy, ConnectionType::IsTrainable, NonRecurrentHiddenLayerConfig>::HiddenLayerNeuronType LastHiddenLayerNeuronType;
+        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutputs, TransferFunctionsPolicy, ConnectionType::IsTrainable, NonRecurrentHiddenLayerConfiguration>::HiddenLayerNeuronType LastHiddenLayerNeuronType;
         typedef HiddenLayer<LastHiddenLayerNeuronType, NumberOfNeuronsInHiddenLayers> LastHiddenLayerType;
     };
 
     template<typename ConnectionType, size_t NumberOfNeuronsInHiddenLayers, size_t NumberOfOutputs, typename TransferFunctionsPolicy>
-    struct HiddenLayerTypeSelector<ConnectionType, 1, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, RecurrentHiddenLayerConfig>
+    struct HiddenLayerTypeSelector<ConnectionType, 1, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, RecurrentHiddenLayerConfiguration>
     {
         typedef typename ConnectionType::ConnectionValueType ValueType;
         typedef NullHiddenLayer<ValueType> InnerHiddenLayerType;
-        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutputs, TransferFunctionsPolicy, ConnectionType::IsTrainable, RecurrentHiddenLayerConfig>::HiddenLayerNeuronType LastHiddenLayerNeuronType;
+        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutputs, TransferFunctionsPolicy, ConnectionType::IsTrainable, RecurrentHiddenLayerConfiguration>::HiddenLayerNeuronType LastHiddenLayerNeuronType;
         typedef HiddenLayer<LastHiddenLayerNeuronType, NumberOfNeuronsInHiddenLayers> LastHiddenLayerType;
     };
 
     template<typename ConnectionType, size_t NumberOfNeuronsInHiddenLayers, size_t NumberOfOutputs, typename TransferFunctionsPolicy>
-    struct HiddenLayerTypeSelector<ConnectionType, 1, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, GRUHiddenLayerConfig>
+    struct HiddenLayerTypeSelector<ConnectionType, 1, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, GRUHiddenLayerConfiguration>
     {
         typedef typename ConnectionType::ConnectionValueType ValueType;
         typedef NullHiddenLayer<ValueType> InnerHiddenLayerType;
-        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutputs, TransferFunctionsPolicy, ConnectionType::IsTrainable, GRUHiddenLayerConfig>::HiddenLayerNeuronType LastHiddenLayerNeuronType;
+        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutputs, TransferFunctionsPolicy, ConnectionType::IsTrainable, GRUHiddenLayerConfiguration>::HiddenLayerNeuronType LastHiddenLayerNeuronType;
         typedef GruHiddenLayer<LastHiddenLayerNeuronType, NumberOfNeuronsInHiddenLayers> LastHiddenLayerType;
     };
 
     template<typename ConnectionType, size_t NumberOfNeuronsInHiddenLayers, size_t NumberOfOutputs, typename TransferFunctionsPolicy>
-    struct HiddenLayerTypeSelector<ConnectionType, 1, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, LSTMHiddenLayerConfig>
+    struct HiddenLayerTypeSelector<ConnectionType, 1, NumberOfNeuronsInHiddenLayers, NumberOfOutputs, TransferFunctionsPolicy, LSTMHiddenLayerConfiguration>
     {
         typedef typename ConnectionType::ConnectionValueType ValueType;
         typedef NullHiddenLayer<ValueType> InnerHiddenLayerType;
-        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutputs, TransferFunctionsPolicy, ConnectionType::IsTrainable, LSTMHiddenLayerConfig>::HiddenLayerNeuronType LastHiddenLayerNeuronType;
+        typedef typename HiddenLayerNeuronTypeSelector<ConnectionType, NumberOfOutputs, TransferFunctionsPolicy, ConnectionType::IsTrainable, LSTMHiddenLayerConfiguration>::HiddenLayerNeuronType LastHiddenLayerNeuronType;
         typedef LstmHiddenLayer<LastHiddenLayerNeuronType, NumberOfNeuronsInHiddenLayers> LastHiddenLayerType;
     };
 
@@ -2709,7 +2735,7 @@ namespace tinymind {
             bool IsTrainable = true,
             size_t BatchSize = 1,
             bool HasRecurrentLayer = false,
-            hiddenLayerConfiguration_e HiddenLayerConfig = NonRecurrentHiddenLayerConfig,
+            hiddenLayerConfiguration_e HiddenLayerConfiguration = NonRecurrentHiddenLayerConfiguration,
             size_t RecurrentConnectionDepth = 0,
             outputLayerConfiguration_e OutputLayerConfiguration = FeedForwardOutputLayerConfiguration
             >
@@ -2725,7 +2751,7 @@ namespace tinymind {
                                         IsTrainable,
                                         BatchSize,
                                         HasRecurrentLayer,
-                                        HiddenLayerConfig,
+                                        HiddenLayerConfiguration,
                                         RecurrentConnectionDepth,
                                         OutputLayerConfiguration> NeuralNetworkType;
 
@@ -2736,7 +2762,7 @@ namespace tinymind {
                                         NumberOfNeuronsInHiddenLayers,
                                         NumberOfOutputs,
                                         TransferFunctionsPolicy,
-                                        HiddenLayerConfig> HiddenLayerTypeSelectorType;
+                                        HiddenLayerConfiguration> HiddenLayerTypeSelectorType;
         typedef typename HiddenLayerTypeSelectorType::InnerHiddenLayerType InnerHiddenLayerType;
         typedef typename HiddenLayerTypeSelectorType::LastHiddenLayerType LastHiddenLayerType;
         typedef RecurrentLayerTypeSelector< ConnectionType,
@@ -2761,7 +2787,7 @@ namespace tinymind {
                                                         TransferFunctionsPolicy,
                                                         BatchSize,
                                                         HasRecurrentLayer,
-                                                        HiddenLayerConfig,
+                                                        HiddenLayerConfiguration,
                                                         IsTrainable,
                                                         OutputLayerConfiguration>::TrainingPolicyType TrainingPolicyType;
 
@@ -2772,6 +2798,7 @@ namespace tinymind {
         static constexpr size_t NumberOfOutputLayerNeurons = NeuralNetworkOutputLayerType::NumberOfNeuronsInLayer;
         static constexpr size_t NeuralNetworkRecurrentConnectionDepth = NeuralNetworkRecurrentLayerType::RecurrentLayerRecurrentConnectionDepth;
         static constexpr size_t NeuralNetworkBatchSize = BatchSize;
+        static constexpr hiddenLayerConfiguration_e NeuralNetworkHiddenLayerConfiguration = HiddenLayerConfiguration;
         static constexpr outputLayerConfiguration_e NeuralNetworkOutputLayerConfiguration = OutputLayerConfiguration;
 
         MultilayerPerceptron()
@@ -3115,7 +3142,7 @@ namespace tinymind {
             bool IsTrainable = true,
             size_t BatchSize = 1,
             bool HasRecurrentLayer = true,
-            hiddenLayerConfiguration_e HiddenLayerConfig = RecurrentHiddenLayerConfig,
+            hiddenLayerConfiguration_e HiddenLayerConfiguration = RecurrentHiddenLayerConfiguration,
             size_t RecurrentConnectionDepth = 1,
             outputLayerConfiguration_e OutputLayerConfiguration = FeedForwardOutputLayerConfiguration
             >
@@ -3128,7 +3155,7 @@ namespace tinymind {
                                                                         IsTrainable,
                                                                         BatchSize,
                                                                         HasRecurrentLayer,
-                                                                        HiddenLayerConfig,
+                                                                        HiddenLayerConfiguration,
                                                                         RecurrentConnectionDepth,
                                                                         OutputLayerConfiguration
                                                                         >
@@ -3184,7 +3211,7 @@ namespace tinymind {
             bool IsTrainable = true,
             size_t BatchSize = 1,
             bool HasRecurrentLayer = true,
-            hiddenLayerConfiguration_e HiddenLayerConfig = LSTMHiddenLayerConfig,
+            hiddenLayerConfiguration_e HiddenLayerConfiguration = LSTMHiddenLayerConfiguration,
             size_t RecurrentConnectionDepth = 1,
             outputLayerConfiguration_e OutputLayerConfiguration = FeedForwardOutputLayerConfiguration
             >
@@ -3197,7 +3224,7 @@ namespace tinymind {
                                                                     IsTrainable,
                                                                     BatchSize,
                                                                     HasRecurrentLayer,
-                                                                    HiddenLayerConfig,
+                                                                    HiddenLayerConfiguration,
                                                                     RecurrentConnectionDepth,
                                                                     OutputLayerConfiguration
                                                                     >
