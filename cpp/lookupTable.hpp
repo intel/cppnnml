@@ -24,6 +24,7 @@
 
 #include "activation.hpp"
 #include "interpolate.hpp"
+#include <cstddef>
 
 namespace tinymind {
     template<typename ValueType>
