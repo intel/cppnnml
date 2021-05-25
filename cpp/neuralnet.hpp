@@ -2976,7 +2976,7 @@ namespace tinymind {
         void setWeights(NeuralNetworkType& other)
         {
             ValueType weightValue;
-            int       hiddenLayer = 0;
+            size_t    hiddenLayer = 0;
 
             for(size_t i = 0; i < NumberOfInputLayerNeurons; ++i)
             {
