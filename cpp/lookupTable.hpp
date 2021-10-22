@@ -24,6 +24,7 @@
 
 #include "activation.hpp"
 #include "interpolate.hpp"
+#include <cstddef>
 
 namespace tinymind {
     template<typename ValueType>
@@ -65,11 +66,11 @@ namespace tinymind {
                     {
                         result = tableValues[upperIndex];
                     }
-                    else if (tableValues[lowerIndex] == value.getValue())
+                    else if (tableValues[lowerIndex] == static_cast<FullWidthFieldType>(value.getValue()))
                     {
                         result = tableValues[lowerIndex];
                     }
-                    else if (tableValues[upperIndex] == value.getValue())
+                    else if (tableValues[upperIndex] == static_cast<FullWidthFieldType>(value.getValue()))
                     {
                         result = tableValues[upperIndex];
                     }
