@@ -1,6 +1,6 @@
 # Simple Makefile for the DQN maze example
 # Tell the code to compile the Q16.16 tanh activation function LUT
-xor: dqn_maze.cpp dqn_mazelearner.cpp ../../cpp/lookupTables.cpp
+default :
 #	Make an output dir to hold the executable
 	mkdir -p ~/dqn_maze
 #	Build the example with default build flags
