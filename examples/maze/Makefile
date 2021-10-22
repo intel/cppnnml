@@ -1,5 +1,5 @@
 # Simple Makefile for the table-based q-learner example
-dummy: maze.cpp mazelearner.cpp
+default :
 #	Make an output dir to hold the executable
 	mkdir -p ~/maze
 #	Build the example with default build flags
