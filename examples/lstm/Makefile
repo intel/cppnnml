@@ -1,4 +1,4 @@
-# Simple Makefile for the table-based q-learner example
+# Simple Makefile for the LSTM example program
 default :
 #	Make an output dir to hold the executable
 	mkdir -p ~/lstm
