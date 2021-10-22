@@ -1,7 +1,7 @@
 # Simple Makefile for the XOR neural network example
 # Enable C++ iostreams
 # Tell the code to compile the Q8.8 tanh activation function LUT
-dummy: xor.cpp xornet.cpp ../../cpp/lookupTables.cpp
+default :
 #	Make an output dir to hold the executable
 	mkdir -p ~/xor
 #	Build the example with default build flags
