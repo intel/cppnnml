@@ -729,7 +729,6 @@ BOOST_AUTO_TEST_CASE(test_qlearn_iterate)
 
 BOOST_AUTO_TEST_CASE(test_dqn_qlearn_iterate)
 {
-    typedef typename QValueType::FullWidthValueType FullWidthValueType;
     std::default_random_engine engine(rd());
     std::uniform_int_distribution<size_t> stateDistribution(0, NUMBER_OF_STATES - 1);
     size_t decisionPoint = 100;
