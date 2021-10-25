@@ -2033,7 +2033,7 @@ namespace tinymind {
         static_assert(NumberOfNeurons > 0, "Number neurons must be > 0");
     };
 
-    template<typename NeuronType, size_t NumberOfNeurons>
+    template<typename NeuronType, size_t NumberOfNeurons, size_t NumberOfBiasNeurons = 1>
     struct LayerWithBias : public Layer<NeuronType, NumberOfNeurons>
     {
         typedef typename NeuronType::NeuronConnectionType ConnectionType;
@@ -2041,68 +2041,74 @@ namespace tinymind {
         typedef typename NeuronType::NeuronTransferFunctionsPolicy TransferFunctionsPolicy;
         typedef typename BiasNeuronTypeSelector<ConnectionType, NeuronType::NumberOfOutgoingConnectionsFromNeuron, TransferFunctionsPolicy, ConnectionType::IsTrainable>::BiasNeuronType BiasNeuronType;
 
-        static constexpr size_t NumberOfBiasNeuronsInLayer = 1;
-
-        ValueType getBiasNeuronDeltaWeightForConnection(const size_t connection) const
-        {
-            return this->mBiasNeuron.getDeltaWeightForConnection(connection);
-        }
-
-        ValueType getBiasNeuronGradientForConnection(const size_t connection) const
-        {
-            return this->mBiasNeuron.getGradientForConnection(connection);
-        }
-
-        ValueType getBiasNeuronOutputValue() const
-        {
-            return this->mBiasNeuron.getOutputValue();
-        }
-
-        ValueType getBiasNeuronPreviousDeltaWeightForConnection(const size_t connection) const
-        {
-            return this->mBiasNeuron.getPreviousDeltaWeightForConnection(connection);
-        }
-
-        ValueType getBiasNeuronWeightForConnection(const size_t connection) const
-        {
-            return this->mBiasNeuron.getWeightForConnection(connection);
-        }
-
-        ValueType getBiasNeuronValueForOutgoingConnection(const size_t connection) const
-        {
-            return this->mBiasNeuron.getOutputValueForConnection(connection);
-        }
+        static constexpr size_t NumberOfBiasNeuronsInLayer = NumberOfBiasNeurons;
 
         void initializeNeurons()
         {
             Layer<NeuronType, NumberOfNeurons>::initializeNeurons();
 
-            this->mBiasNeuron.setOutputValue(TransferFunctionsPolicy::initialBiasOutputValue());
+            for (size_t index = 0;index < NumberOfBiasNeurons;++index)
+            {
+                this->mBiasNeuron[index].setOutputValue(TransferFunctionsPolicy::initialBiasOutputValue());
+            }
         }
 
         void initializeWeights()
         {
             Layer<NeuronType, NumberOfNeurons>::initializeWeights();
 
-            this->mBiasNeuron.initializeWeights();
-        }
-
-        void setBiasNeuronDeltaWeightForConnection(const size_t connection, const ValueType& deltaWeight)
-        {
-            this->mBiasNeuron.setDeltaWeightForConnection(connection, deltaWeight);
-        }
-
-        void setBiasNeuronGradientForConnection(const size_t connection, const ValueType& value)
-        {
-            this->mBiasNeuron.setGradientForConnection(connection, value);
-        }
-
-        void setBiasNeuronWeightForConnection(const size_t connection, const ValueType& weight)
-        {
-            this->mBiasNeuron.setWeightForConnection(connection, weight);
+            for (size_t index = 0;index < NumberOfBiasNeurons;++index)
+            {
+                this->mBiasNeuron[index].initializeWeights();
+            }
         }
 
     protected:
+        ValueType getBiasNeuronDeltaWeightForConnection(const size_t index, const size_t connection) const
+        {
+            return this->mBiasNeuron[index].getDeltaWeightForConnection(connection);
+        }
+
+        ValueType getBiasNeuronGradientForConnection(const size_t index, const size_t connection) const
+        {
+            return this->mBiasNeuron[index].getGradientForConnection(connection);
+        }
+
+        ValueType getBiasNeuronOutputValue(const size_t index) const
+        {
+            return this->mBiasNeuron[index].getOutputValue();
+        }
+
+        ValueType getBiasNeuronPreviousDeltaWeightForConnection(const size_t index, const size_t connection) const
+        {
+            return this->mBiasNeuron[index].getPreviousDeltaWeightForConnection(connection);
+        }
+
+        ValueType getBiasNeuronWeightForConnection(const size_t index, const size_t connection) const
+        {
+            return this->mBiasNeuron[index].getWeightForConnection(connection);
+        }
+
+        ValueType getBiasNeuronValueForOutgoingConnection(const size_t index, const size_t connection) const
+        {
+            return this->mBiasNeuron[index].getOutputValueForConnection(connection);
+        }
+
+        void setBiasNeuronDeltaWeightForConnection(const size_t index, const size_t connection, const ValueType deltaWeight)
+        {
+            this->mBiasNeuron[index].setDeltaWeightForConnection(connection, deltaWeight);
+        }
+
+        void setBiasNeuronGradientForConnection(const size_t index, const size_t connection, const ValueType value)
+        {
+            this->mBiasNeuron[index].setGradientForConnection(connection, value);
+        }
+
+        void setBiasNeuronWeightForConnection(const size_t index, const size_t connection, const ValueType weight)
+        {
+            this->mBiasNeuron[index].setWeightForConnection(connection, weight);
+        }
+
         LayerWithBias()
         {
         }
@@ -2111,7 +2117,7 @@ namespace tinymind {
         {
         }
 
-        BiasNeuronType mBiasNeuron;
+        BiasNeuronType mBiasNeuron[NumberOfBiasNeurons];
     };
 
     template<typename NeuronType, size_t NumberOfNeurons>
@@ -2121,10 +2127,80 @@ namespace tinymind {
         typedef typename TransferFunctionsPolicy::TransferFunctionsValueType ValueType;
 
         static constexpr size_t NumberOfNeuronsInLayer = NumberOfNeurons;
-        static constexpr size_t NumberOfBiasNeuronsInLayer = 1;
+        static constexpr size_t NumberOfBiasNeuronsInLayer = LayerWithBias<NeuronType, NumberOfNeurons>::NumberOfBiasNeuronsInLayer;
 
         /**
-         * Feed forward in the InputLayer simply latches the current value for each neuron.
+         * Feed forward simply latches the current value for each neuron.
+         */
+        void feedForward(ValueType const* const values)
+        {
+            size_t bufferIndex;
+            NeuronType* pNeuron;
+            for (size_t neuron = 0; neuron < NumberOfNeurons; ++neuron)
+            {
+                bufferIndex = neuron * sizeof(NeuronType);
+                pNeuron = reinterpret_cast<NeuronType*>(&this->mNeuronsBuffer[bufferIndex]);
+                pNeuron->setOutputValue(values[neuron]);
+            }
+        }
+
+        ValueType getBiasNeuronDeltaWeightForConnection(const size_t connection) const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronDeltaWeightForConnection(0, connection);
+        }
+
+        ValueType getBiasNeuronGradientForConnection(const size_t connection) const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronGradientForConnection(0, connection);
+        }
+
+        ValueType getBiasNeuronOutputValue() const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronOutputValue(0);
+        }
+
+        ValueType getBiasNeuronPreviousDeltaWeightForConnection(const size_t connection) const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronPreviousDeltaWeightForConnection(0, connection);
+        }
+
+        ValueType getBiasNeuronWeightForConnection(const size_t connection) const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronWeightForConnection(0, connection);
+        }
+
+        ValueType getBiasNeuronValueForOutgoingConnection(const size_t connection) const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronValueForOutgoingConnection(0, connection);
+        }
+
+        void setBiasNeuronDeltaWeightForConnection(const size_t connection, const ValueType deltaWeight)
+        {
+            LayerWithBias<NeuronType, NumberOfNeurons>::setBiasNeuronDeltaWeightForConnection(0, connection, deltaWeight);
+        }
+
+        void setBiasNeuronGradientForConnection(const size_t connection, const ValueType value)
+        {
+            LayerWithBias<NeuronType, NumberOfNeurons>::setBiasNeuronGradientForConnection(0, connection, value);
+        }
+
+        void setBiasNeuronWeightForConnection(const size_t connection, const ValueType weight)
+        {
+            LayerWithBias<NeuronType, NumberOfNeurons>::setBiasNeuronWeightForConnection(0, connection, weight);
+        }
+    };
+
+    template<typename NeuronType, size_t NumberOfNeurons>
+    struct LstmInputLayer : public LayerWithBias<NeuronType, NumberOfNeurons, 4>
+    {
+        typedef typename NeuronType::NeuronTransferFunctionsPolicy TransferFunctionsPolicy;
+        typedef typename TransferFunctionsPolicy::TransferFunctionsValueType ValueType;
+
+        static constexpr size_t NumberOfNeuronsInLayer = NumberOfNeurons;
+        static constexpr size_t NumberOfBiasNeuronsInLayer = LayerWithBias<NeuronType, NumberOfNeurons, 4>::NumberOfBiasNeuronsInLayer;
+
+        /**
+         * Feed forward simply latches the current value for each neuron.
          */
         void feedForward(ValueType const* const values)
         {
@@ -2195,6 +2271,36 @@ namespace tinymind {
             }
         }
 
+        ValueType getBiasNeuronDeltaWeightForConnection(const size_t connection) const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronDeltaWeightForConnection(0, connection);
+        }
+
+        ValueType getBiasNeuronGradientForConnection(const size_t connection) const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronGradientForConnection(0, connection);
+        }
+
+        ValueType getBiasNeuronOutputValue() const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronOutputValue(0);
+        }
+
+        ValueType getBiasNeuronPreviousDeltaWeightForConnection(const size_t connection) const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronPreviousDeltaWeightForConnection(0, connection);
+        }
+
+        ValueType getBiasNeuronWeightForConnection(const size_t connection) const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronWeightForConnection(0, connection);
+        }
+
+        ValueType getBiasNeuronValueForOutgoingConnection(const size_t connection) const
+        {
+            return LayerWithBias<NeuronType, NumberOfNeurons>::getBiasNeuronValueForOutgoingConnection(0, connection);
+        }
+
         ValueType getRecurrentConnectionDeltaWeightForNeuronAtDepth(const size_t neuron, const size_t depth) const
         {
             const size_t bufferIndex = neuron * sizeof(NeuronType);
@@ -2215,7 +2321,22 @@ namespace tinymind {
             const NeuronType* pNeuron = reinterpret_cast<const NeuronType*>(&this->mNeuronsBuffer[bufferIndex]);
             return pNeuron->getRecurrentConnectionWeightAtDepth(depth);
         }
-        
+
+        void setBiasNeuronDeltaWeightForConnection(const size_t connection, const ValueType deltaWeight)
+        {
+            LayerWithBias<NeuronType, NumberOfNeurons>::setBiasNeuronDeltaWeightForConnection(0, connection, deltaWeight);
+        }
+
+        void setBiasNeuronGradientForConnection(const size_t connection, const ValueType value)
+        {
+            LayerWithBias<NeuronType, NumberOfNeurons>::setBiasNeuronGradientForConnection(0, connection, value);
+        }
+
+        void setBiasNeuronWeightForConnection(const size_t connection, const ValueType weight)
+        {
+            LayerWithBias<NeuronType, NumberOfNeurons>::setBiasNeuronWeightForConnection(0, connection, weight);
+        }
+
         void setRecurrentConnectionDeltaWeightForNeuronAtDepth(const size_t neuron, const size_t depth, const ValueType& value)
         {
             const size_t bufferIndex = neuron * sizeof(NeuronType);
@@ -2497,6 +2618,18 @@ namespace tinymind {
         }
     };
 
+    template<typename NeuronType, size_t NumberOfNeurons, hiddenLayerConfiguration_e HiddenLayerConfiguration>
+    struct InputLayerTypeSelector
+    {
+        typedef InputLayer<NeuronType, NumberOfNeurons> InputLayerType;
+    };
+
+    template<typename NeuronType, size_t NumberOfNeurons>
+    struct InputLayerTypeSelector<NeuronType, NumberOfNeurons, LSTMHiddenLayerConfiguration>
+    {
+        typedef LstmInputLayer<NeuronType, NumberOfNeurons> InputLayerType;
+    };
+
     template<typename NeuronType, size_t NumberOfNeurons, outputLayerConfiguration_e outputLayerConfiguration>
     struct OutputLayerTypeSelector
     {
@@ -2772,8 +2905,9 @@ namespace tinymind {
                                             HasRecurrentLayer> RecurrentLayerTypeSelectorType;
         typedef typename RecurrentLayerTypeSelectorType::RecurrentLayerType NeuralNetworkRecurrentLayerType;
         typedef typename InputLayerNeuronTypeSelector<ConnectionType, NumberOfNeuronsInHiddenLayers, TransferFunctionsPolicy, IsTrainable>::InputLayerNeuronType InputLayerNeuronType;
+        typedef InputLayerTypeSelector<InputLayerNeuronType, NumberOfInputs, HiddenLayerConfiguration> InputLayerTypeSelectorType;
         typedef typename OutputLayerNeuronTypeSelector<ConnectionType, TransferFunctionsPolicy, IsTrainable>::OutputLayerNeuronType OutputLayerNeuronType;
-        typedef InputLayer<InputLayerNeuronType, NumberOfInputs> InputLayerType;
+        typedef typename InputLayerTypeSelectorType::InputLayerType InputLayerType;
         typedef OutputLayerTypeSelector<OutputLayerNeuronType,
                                         NumberOfOutputs,
                                         OutputLayerConfiguration> OutputLayerTypeSelectorType;
