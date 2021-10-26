@@ -1580,8 +1580,6 @@ namespace tinymind {
         typedef typename NeuronTransferFunctionsPolicy::TransferFunctionsValueType ValueType;
 
         static constexpr size_t NumberOfOutgoingConnectionsFromNeuron = NumberOfOutgoingConnections;
-    private:
-        ValueType mState;
     };
 
     template<
@@ -1596,8 +1594,6 @@ namespace tinymind {
         typedef typename NeuronTransferFunctionsPolicy::TransferFunctionsValueType ValueType;
 
         static constexpr size_t NumberOfOutgoingConnectionsFromNeuron = NumberOfOutgoingConnections;
-    private:
-        ValueType mState;
     };
 
     template<
@@ -1613,12 +1609,12 @@ namespace tinymind {
 
         static constexpr size_t NumberOfOutgoingConnectionsFromNeuron = NumberOfOutgoingConnections;
 
-        ValueType getState(void) const
+        ValueType getCellState(void) const
         {
             return this->mState;
         }
 
-        void setState(const ValueType& state)
+        void setCellState(const ValueType& state)
         {
             this->mState = state;
         }
@@ -1639,12 +1635,12 @@ namespace tinymind {
 
         static constexpr size_t NumberOfOutgoingConnectionsFromNeuron = NumberOfOutgoingConnections;
 
-        ValueType getState(void) const
+        ValueType getCellState(void) const
         {
             return this->mState;
         }
 
-        void setState(const ValueType& state)
+        void setCellState(const ValueType& state)
         {
             this->mState = state;
         }
@@ -2576,7 +2572,7 @@ namespace tinymind {
 
                 bufferIndex = neuron * sizeof(NeuronType);
                 pNeuron = reinterpret_cast<NeuronType*>(&this->mNeuronsBuffer[bufferIndex]);
-                pNeuron->setState(sum);
+                pNeuron->setCellState(sum);
 
                 inputActivation = TransferFunctionsPolicy::hiddenNeuronActivationFunction(sum);
                 resetGateActivation = ResetGateActivationPolicy::activationFunction(sum);
@@ -2648,7 +2644,7 @@ namespace tinymind {
                 biasValue = previousLayer.getBiasNeuronValueForOutgoingConnection(neuron);
                 gateInputValue = (inputValue + recurrentValue + biasValue);
 
-                previousCellState = pNeuron->getState();
+                previousCellState = pNeuron->getCellState();
 
                 forgetGateActivation = ForgetGateActivationPolicy::activationFunction(gateInputValue);
                 inputGateActivation = InputGateActivationPolicy::activationFunction(gateInputValue);
@@ -2657,7 +2653,7 @@ namespace tinymind {
 
                 cellState = (previousCellState * forgetGateActivation);
                 cellState += (cellStateSigmoidActivation * inputActivation);
-                pNeuron->setState(cellState);
+                pNeuron->setCellState(cellState);
 
                 output = CellStateActivationPolicy::activationFunction(cellState);
                 output *= outputGateActivation;
