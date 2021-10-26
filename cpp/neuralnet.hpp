@@ -2192,7 +2192,7 @@ namespace tinymind {
         }
     };
 
-    template<typename NeuronType, size_t NumberOfNeurons, size_t NumberOfBiasNeurons = 3>
+    template<typename NeuronType, size_t NumberOfNeurons, size_t NumberOfBiasNeurons = 4>
     struct LstmInputLayer : public LayerWithBias<NeuronType, NumberOfNeurons, NumberOfBiasNeurons>
     {
         typedef LayerWithBias<NeuronType, NumberOfNeurons, NumberOfBiasNeurons> ParentType;
@@ -2202,8 +2202,9 @@ namespace tinymind {
         static constexpr size_t NumberOfNeuronsInLayer = NumberOfNeurons;
         static constexpr size_t NumberOfBiasNeuronsInLayer = NumberOfBiasNeurons;
         static constexpr size_t ForgetGateIndex = 0;
-        static constexpr size_t InputGateIndex = 1;
-        static constexpr size_t OutputGateIndex = 2;
+        static constexpr size_t UpdateGateIndex = 1;
+        static constexpr size_t InputGateIndex = 2;
+        static constexpr size_t OutputGateIndex = 3;
 
         /**
          * Feed forward simply latches the current value for each neuron.
@@ -2225,6 +2226,11 @@ namespace tinymind {
             return ParentType::getBiasNeuronDeltaWeightForConnection(ForgetGateIndex, connection);
         }
 
+        ValueType getUpdateGateBiasNeuronDeltaWeightForConnection(const size_t connection) const
+        {
+            return ParentType::getBiasNeuronDeltaWeightForConnection(UpdateGateIndex, connection);
+        }
+
         ValueType getInputGateBiasNeuronDeltaWeightForConnection(const size_t connection) const
         {
             return ParentType::getBiasNeuronDeltaWeightForConnection(InputGateIndex, connection);
@@ -2238,6 +2244,11 @@ namespace tinymind {
         ValueType getForgetGateBiasNeuronGradientForConnection(const size_t connection) const
         {
             return ParentType::getBiasNeuronGradientForConnection(ForgetGateIndex, connection);
+        }
+
+        ValueType getUpdateGateBiasNeuronGradientForConnection(const size_t connection) const
+        {
+            return ParentType::getBiasNeuronGradientForConnection(UpdateGateIndex, connection);
         }
 
         ValueType getInputGateBiasNeuronGradientForConnection(const size_t connection) const
@@ -2255,6 +2266,11 @@ namespace tinymind {
             return ParentType::getBiasNeuronOutputValue(ForgetGateIndex);
         }
 
+        ValueType getUpdateGateBiasNeuronOutputValue() const
+        {
+            return ParentType::getBiasNeuronOutputValue(UpdateGateIndex);
+        }
+
         ValueType getInputGateBiasNeuronOutputValue() const
         {
             return ParentType::getBiasNeuronOutputValue(InputGateIndex);
@@ -2268,6 +2284,11 @@ namespace tinymind {
         ValueType getForgetGateBiasNeuronPreviousDeltaWeightForConnection(const size_t connection) const
         {
             return ParentType::getBiasNeuronPreviousDeltaWeightForConnection(ForgetGateIndex, connection);
+        }
+
+        ValueType getUpdateGateBiasNeuronPreviousDeltaWeightForConnection(const size_t connection) const
+        {
+            return ParentType::getBiasNeuronPreviousDeltaWeightForConnection(UpdateGateIndex, connection);
         }
 
         ValueType getInputGateBiasNeuronPreviousDeltaWeightForConnection(const size_t connection) const
@@ -2285,6 +2306,11 @@ namespace tinymind {
             return ParentType::getBiasNeuronWeightForConnection(ForgetGateIndex, connection);
         }
 
+        ValueType getUpdateGateBiasNeuronWeightForConnection(const size_t connection) const
+        {
+            return ParentType::getBiasNeuronWeightForConnection(UpdateGateIndex, connection);
+        }
+
         ValueType getInputGateBiasNeuronWeightForConnection(const size_t connection) const
         {
             return ParentType::getBiasNeuronWeightForConnection(InputGateIndex, connection);
@@ -2298,6 +2324,11 @@ namespace tinymind {
         ValueType getForgetGateBiasNeuronValueForOutgoingConnection(const size_t connection) const
         {
             return ParentType::getBiasNeuronValueForOutgoingConnection(ForgetGateIndex, connection);
+        }
+
+        ValueType getUpdateGateBiasNeuronValueForOutgoingConnection(const size_t connection) const
+        {
+            return ParentType::getBiasNeuronValueForOutgoingConnection(UpdateGateIndex, connection);
         }
 
         ValueType getInputGateBiasNeuronValueForOutgoingConnection(const size_t connection) const
@@ -2315,6 +2346,11 @@ namespace tinymind {
             ParentType::setBiasNeuronDeltaWeightForConnection(ForgetGateIndex, connection, deltaWeight);
         }
 
+        void setUpdateGateBiasNeuronDeltaWeightForConnection(const size_t connection, const ValueType deltaWeight)
+        {
+            ParentType::setBiasNeuronDeltaWeightForConnection(UpdateGateIndex, connection, deltaWeight);
+        }
+
         void setInputGateBiasNeuronDeltaWeightForConnection(const size_t connection, const ValueType deltaWeight)
         {
             ParentType::setBiasNeuronDeltaWeightForConnection(InputGateIndex, connection, deltaWeight);
@@ -2330,6 +2366,11 @@ namespace tinymind {
             ParentType::setBiasNeuronGradientForConnection(ForgetGateIndex, connection, value);
         }
 
+        void setUpdateGateBiasNeuronGradientForConnection(const size_t connection, const ValueType value)
+        {
+            ParentType::setBiasNeuronGradientForConnection(UpdateGateIndex, connection, value);
+        }
+
         void setInputGateBiasNeuronGradientForConnection(const size_t connection, const ValueType value)
         {
             ParentType::setBiasNeuronGradientForConnection(InputGateIndex, connection, value);
@@ -2343,6 +2384,11 @@ namespace tinymind {
         void setForgetGateBiasNeuronWeightForConnection(const size_t connection, const ValueType weight)
         {
             ParentType::setBiasNeuronWeightForConnection(ForgetGateIndex, connection, weight);
+        }
+
+        void setUpdateGateBiasNeuronWeightForConnection(const size_t connection, const ValueType weight)
+        {
+            ParentType::setBiasNeuronWeightForConnection(UpdateGateIndex, connection, weight);
         }
 
         void setInputGateBiasNeuronWeightForConnection(const size_t connection, const ValueType weight)
