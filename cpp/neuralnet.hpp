@@ -2121,7 +2121,7 @@ namespace tinymind {
     };
 
     template<typename NeuronType, size_t NumberOfNeurons, size_t NumberOfBiasNeurons = 1>
-    struct InputLayer : public LayerWithBias<NeuronType, NumberOfNeurons>
+    struct InputLayer : public LayerWithBias<NeuronType, NumberOfNeurons, NumberOfBiasNeurons>
     {
         typedef LayerWithBias<NeuronType, NumberOfNeurons, NumberOfBiasNeurons> ParentType;
         typedef typename NeuronType::NeuronTransferFunctionsPolicy TransferFunctionsPolicy;
