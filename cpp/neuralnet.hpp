@@ -269,18 +269,18 @@ namespace tinymind {
     };
 
     template<typename NeuralNetworkType, size_t NumberOfInnerHiddenLayers, bool IsTrainable>
-    struct GradientsManagerChooser
+    struct GradientsManagerSelector
     {
     };
 
     template<typename NeuralNetworkType, size_t NumberOfInnerHiddenLayers>
-    struct GradientsManagerChooser<NeuralNetworkType, NumberOfInnerHiddenLayers, true>
+    struct GradientsManagerSelector<NeuralNetworkType, NumberOfInnerHiddenLayers, true>
     {
         typedef GradientsManager<NeuralNetworkType, NumberOfInnerHiddenLayers> GradientsManagerType;
     };
 
     template<typename NeuralNetworkType, size_t NumberOfInnerHiddenLayers>
-    struct GradientsManagerChooser<NeuralNetworkType, NumberOfInnerHiddenLayers, false>
+    struct GradientsManagerSelector<NeuralNetworkType, NumberOfInnerHiddenLayers, false>
     {
         typedef NullGradientsManager<NeuralNetworkType, NumberOfInnerHiddenLayers> GradientsManagerType;
     };
@@ -680,7 +680,7 @@ namespace tinymind {
     struct BiasGradientsCalculator
     {
     };
-    
+
     template<typename ValueType, typename GradientsManagerType>
     struct BiasGradientsCalculator<ValueType, GradientsManagerType, 1>
     {
@@ -699,7 +699,7 @@ namespace tinymind {
             }
         }
     };
-    
+
     template<typename ValueType, typename GradientsManagerType>
     struct BiasGradientsCalculator<ValueType, GradientsManagerType, 0>
     {
@@ -713,7 +713,7 @@ namespace tinymind {
     struct OuputLayerBiasGradientsCalculator
     {
     };
-    
+
     template<typename ValueType, typename GradientsManagerType>
     struct OuputLayerBiasGradientsCalculator<ValueType, GradientsManagerType, FeedForwardOutputLayerConfiguration, 1>
     {
@@ -732,7 +732,7 @@ namespace tinymind {
             }
         }
     };
-    
+
     template<typename ValueType, typename GradientsManagerType>
     struct OuputLayerBiasGradientsCalculator<ValueType, GradientsManagerType, ClassifierOutputLayerConfiguration, 1>
     {
@@ -751,7 +751,7 @@ namespace tinymind {
             }
         }
     };
-    
+
     template<typename ValueType, typename GradientsManagerType, outputLayerConfiguration_e OutputLayerConfiguration>
     struct OuputLayerBiasGradientsCalculator<ValueType, GradientsManagerType, OutputLayerConfiguration, 0>
     {
@@ -1261,6 +1261,10 @@ namespace tinymind {
 
     protected:
         ValueType mWeight;
+
+    private:
+        Connection(const Connection&) = delete;
+        Connection& operator=(const Connection&) = delete;
     };
 
     template<typename ValueType>
@@ -1303,23 +1307,348 @@ namespace tinymind {
         ValueType mDeltaWeight;
         ValueType mPreviousDeltaWeight;
         ValueType mGradient;
+
+    private:
+        TrainableConnection(const TrainableConnection&) = delete;
+        TrainableConnection& operator=(const TrainableConnection&) = delete;
     };
 
-    template<typename ValueType, bool IsTrainable>
+    template<typename ValueType>
+    struct LstmConnection
+    {
+        typedef ValueType ConnectionValueType;
+
+        static constexpr bool IsTrainable = false;
+        static constexpr size_t NumberOfGates = 4;
+        static constexpr size_t ForgetGateIndex = 0;
+        static constexpr size_t UpdateGateIndex = 1;
+        static constexpr size_t InputGateIndex = 2;
+        static constexpr size_t OutputGateIndex = 3;
+
+        LstmConnection()
+        {
+            for (size_t index = 0;index < NumberOfGates;++index)
+            {
+                this->mWeights[index] = 0;
+            }
+        }
+
+        ValueType getForgetGateDeltaWeight() const
+        {
+            return 0;
+        }
+
+        ValueType getInputGateDeltaWeight() const
+        {
+            return 0;
+        }
+
+        ValueType getOutputGateDeltaWeight() const
+        {
+            return 0;
+        }
+
+        ValueType getUpdateGateDeltaWeight() const
+        {
+            return 0;
+        }
+
+        ValueType getForgetGateGradient() const
+        {
+            return 0;
+        }
+
+        ValueType getInputGateGradient() const
+        {
+            return 0;
+        }
+
+        ValueType getOutputGateGradient() const
+        {
+            return 0;
+        }
+
+        ValueType getUpdateGateGradient() const
+        {
+            return 0;
+        }
+
+        ValueType getForgetGatePreviousDeltaWeight() const
+        {
+            return 0;
+        }
+
+        ValueType getInputGatePreviousDeltaWeight() const
+        {
+            return 0;
+        }
+
+        ValueType getOutputGatePreviousDeltaWeight() const
+        {
+            return 0;
+        }
+
+        ValueType getUpdateGatePreviousDeltaWeight() const
+        {
+            return 0;
+        }
+
+        ValueType getForgetGateWeight() const
+        {
+            return this->mWeight[ForgetGateIndex];
+        }
+
+        ValueType getInputGateWeight() const
+        {
+            return this->mWeight[InputGateIndex];
+        }
+
+        ValueType getOuputGateWeight() const
+        {
+            return this->mWeight[OutputGateIndex];
+        }
+
+        ValueType getUpdateGateWeight() const
+        {
+            return this->mWeight[UpdateGateIndex];
+        }
+
+        void setForgetGateDeltaWeight(const ValueType& value)
+        {
+        }
+
+        void setInputGateDeltaWeight(const ValueType& value)
+        {
+        }
+
+        void setOutputGateDeltaWeight(const ValueType& value)
+        {
+        }
+
+        void setUpdateGateDeltaWeight(const ValueType& value)
+        {
+        }
+
+        void setForgetGateGradient(const ValueType& value)
+        {
+        }
+
+        void setInputGateGradient(const ValueType& value)
+        {
+        }
+
+        void setOutputGateGradient(const ValueType& value)
+        {
+        }
+
+        void setUpdateGateGradient(const ValueType& value)
+        {
+        }
+
+        void setForgetGateWeight(const ValueType& value)
+        {
+            this->mWeights[ForgetGateIndex] = value;
+        }
+
+        void setInputGateWeight(const ValueType& value)
+        {
+            this->mWeights[InputGateIndex] = value;
+        }
+
+        void setOutputGateWeight(const ValueType& value)
+        {
+            this->mWeights[OutputGateIndex] = value;
+        }
+
+        void setUpdateGateWeight(const ValueType& value)
+        {
+            this->mWeights[UpdateGateIndex] = value;
+        }
+
+    protected:
+        ValueType mWeights[NumberOfGates];
+
+    private:
+        LstmConnection(const LstmConnection&) = delete;
+        LstmConnection& operator=(const LstmConnection&) = delete;
+    };
+
+    template<typename ValueType>
+    struct TrainableLstmConnection : public LstmConnection<ValueType>
+    {
+        typedef ValueType ConnectionValueType;
+        typedef LstmConnection<ValueType> ParentType;
+        
+        static constexpr bool IsTrainable = true;
+        static constexpr size_t NumberOfGates = ParentType::NumberOfGates;
+        static constexpr size_t ForgetGateIndex = ParentType::ForgetGateIndex;
+        static constexpr size_t UpdateGateIndex = ParentType::UpdateGateIndex;
+        static constexpr size_t InputGateIndex = ParentType::InputGateIndex;
+        static constexpr size_t OutputGateIndex = ParentType::OutputGateIndex;
+
+        TrainableLstmConnection()
+        {
+            for (size_t index = 0;index < NumberOfGates;++index)
+            {
+                this->mDeltaWeight[index] = 0;
+                this->mPreviousDeltaWeight[index] = 0;
+                this->mGradient[index] = 0;
+            }
+        }
+
+        ValueType getForgetGateDeltaWeight() const
+        {
+            return this->mDeltaWeights[ForgetGateIndex];
+        }
+
+        ValueType getInputGateDeltaWeight() const
+        {
+            return this->mDeltaWeights[InputGateIndex];
+        }
+
+        ValueType getOutputGateDeltaWeight() const
+        {
+            return this->mDeltaWeights[OutputGateIndex];
+        }
+
+        ValueType getUpdateGateDeltaWeight() const
+        {
+            return this->mDeltaWeights[UpdateGateIndex];
+        }
+
+        ValueType getForgetGateGradient() const
+        {
+            return this->mGradients[ForgetGateIndex];
+        }
+
+        ValueType getInputGateGradient() const
+        {
+            return this->mGradients[InputGateIndex];
+        }
+
+        ValueType getOutputGateGradient() const
+        {
+            return this->mGradients[OutputGateIndex];
+        }
+
+        ValueType getUpdateGateGradient() const
+        {
+            return this->mGradients[UpdateGateIndex];
+        }
+
+        ValueType getForgetGatePreviousDeltaWeight() const
+        {
+            return this->mPreviousDeltaWeights[ForgetGateIndex];
+        }
+
+        ValueType getInputGatePreviousDeltaWeight() const
+        {
+            return this->mPreviousDeltaWeights[InputGateIndex];
+        }
+
+        ValueType getOutputGatePreviousDeltaWeight() const
+        {
+            return this->mPreviousDeltaWeights[OutputGateIndex];
+        }
+
+        ValueType getUpdateGatePreviousDeltaWeight() const
+        {
+            return this->mPreviousDeltaWeights[UpdateGateIndex];
+        }
+
+        void setForgetGateDeltaWeight(const ValueType& value)
+        {
+            this->mPreviousDeltaWeights[ForgetGateIndex] = this->mDeltaWeights[ForgetGateIndex];
+            this->mDeltaWeights[ForgetGateIndex] = value;
+        }
+
+        void setInputGateDeltaWeight(const ValueType& value)
+        {
+            this->mPreviousDeltaWeights[InputGateIndex] = this->mDeltaWeights[InputGateIndex];
+            this->mDeltaWeights[InputGateIndex] = value;
+        }
+
+        void setOutputGateDeltaWeight(const ValueType& value)
+        {
+            this->mPreviousDeltaWeights[OutputGateIndex] = this->mDeltaWeights[OutputGateIndex];
+            this->mDeltaWeights[OutputGateIndex] = value;
+        }
+
+        void setUpdateGateDeltaWeight(const ValueType& value)
+        {
+            this->mPreviousDeltaWeights[UpdateGateIndex] = this->mDeltaWeights[UpdateGateIndex];
+            this->mDeltaWeights[UpdateGateIndex] = value;
+        }
+
+        void setForgetGateGradient(const ValueType& value)
+        {
+            this->mGradients[ForgetGateIndex] = value;
+        }
+
+        void setInputGateGradient(const ValueType& value)
+        {
+            this->mGradients[InputGateIndex] = value;
+        }
+
+        void setOutputGateGradient(const ValueType& value)
+        {
+            this->mGradients[OutputGateIndex] = value;
+        }
+
+        void setUpdateGateGradient(const ValueType& value)
+        {
+            this->mGradients[UpdateGateIndex] = value;
+        }
+    protected:
+        ValueType mDeltaWeight[NumberOfGates];
+        ValueType mPreviousDeltaWeight[NumberOfGates];
+        ValueType mGradient[NumberOfGates];
+
+    private:
+        TrainableLstmConnection(const TrainableLstmConnection&) = delete;
+        TrainableLstmConnection& operator=(const TrainableLstmConnection&) = delete;
+    };
+
+
+    template<typename ValueType, hiddenLayerConfiguration_e HiddenLayerConfiguration, bool IsTrainable>
     struct ConnectionTypeSelector
     {
     };
 
     template<typename ValueType>
-    struct ConnectionTypeSelector<ValueType, true>
+    struct ConnectionTypeSelector<ValueType, NonRecurrentHiddenLayerConfiguration, true>
     {
         typedef TrainableConnection<ValueType> ConnectionType;
     };
 
     template<typename ValueType>
-    struct ConnectionTypeSelector<ValueType, false>
+    struct ConnectionTypeSelector<ValueType, NonRecurrentHiddenLayerConfiguration, false>
     {
         typedef Connection<ValueType> ConnectionType;
+    };
+
+    template<typename ValueType>
+    struct ConnectionTypeSelector<ValueType, RecurrentHiddenLayerConfiguration, true>
+    {
+        typedef TrainableConnection<ValueType> ConnectionType;
+    };
+
+    template<typename ValueType>
+    struct ConnectionTypeSelector<ValueType, RecurrentHiddenLayerConfiguration, false>
+    {
+        typedef Connection<ValueType> ConnectionType;
+    };
+
+    template<typename ValueType>
+    struct ConnectionTypeSelector<ValueType, LSTMHiddenLayerConfiguration, true>
+    {
+        typedef TrainableLstmConnection<ValueType> ConnectionType;
+    };
+
+    template<typename ValueType>
+    struct ConnectionTypeSelector<ValueType, LSTMHiddenLayerConfiguration, false>
+    {
+        typedef LstmConnection<ValueType> ConnectionType;
     };
 
     template<
@@ -2607,8 +2936,9 @@ namespace tinymind {
     {
         typedef typename NeuronType::ValueType ValueType;
         typedef typename NeuronType::NeuronTransferFunctionsPolicy TransferFunctionsPolicy;
-        typedef SigmoidActivationPolicy<ValueType> InputGateActivationPolicy;
         typedef SigmoidActivationPolicy<ValueType> ForgetGateActivationPolicy;
+        typedef SigmoidActivationPolicy<ValueType> InputGateActivationPolicy;
+        typedef TanhActivationPolicy<ValueType> UpdateGateActivationPolicy;
         typedef SigmoidActivationPolicy<ValueType> OutputGateActivationPolicy;
         typedef TanhActivationPolicy<ValueType> CellStateActivationPolicy;
         
@@ -2622,6 +2952,7 @@ namespace tinymind {
             NeuronType* pNeuron;
             ValueType inputActivation;
             ValueType inputGateActivation;
+            ValueType updateGateActivation;
             ValueType forgetGateActivation;
             ValueType outputGateActivation;
             ValueType output;
@@ -2639,12 +2970,30 @@ namespace tinymind {
                 bufferIndex = neuron * sizeof(NeuronType);
                 pNeuron = reinterpret_cast<NeuronType*>(&this->mNeuronsBuffer[bufferIndex]);
 
+                previousCellState = pNeuron->getCellState();
+
                 recurrentValue = recurrentLayer.getOutputValueForOutgoingConnection(neuron);
                 inputValue = previousLayer.getOutputValueForOutgoingConnection(neuron);
-                biasValue = previousLayer.getBiasNeuronValueForOutgoingConnection(neuron);
-                gateInputValue = (inputValue + recurrentValue + biasValue);
 
-                previousCellState = pNeuron->getCellState();
+                // Calculate forget gate activation
+                biasValue = previousLayer.getForgetGateBiasNeuronValueForOutgoingConnection(neuron);
+                sum = (recurrentValue + inputValue + biasValue);
+                forgetGateActivation = ForgetGateActivationPolicy::activationFunction(sum);
+
+                // Calculate input gate activation
+                biasValue = previousLayer.getInputGateBiasNeuronValueForOutgoingConnection(neuron);
+                sum = (recurrentValue + inputValue + biasValue);
+                inputGateActivation = InputGateActivationPolicy::activationFunction(sum);
+
+                // Calculate update gate activation
+                biasValue = previousLayer.getupdateGateBiasNeuronValueForOutgoingConnection(neuron);
+                sum = (recurrentValue + inputValue + biasValue);
+                updateGateActivation = UpdateGateActivationPolicy::activationFunction(sum);
+
+                // Calculate output gate activation
+                biasValue = previousLayer.getoutputGateBiasNeuronValueForOutgoingConnection(neuron);
+                sum = (recurrentValue + inputValue + biasValue);
+                outputGateActivation = OutputGateActivationPolicy::activationFunction(sum);
 
                 forgetGateActivation = ForgetGateActivationPolicy::activationFunction(gateInputValue);
                 inputGateActivation = InputGateActivationPolicy::activationFunction(gateInputValue);
@@ -3074,7 +3423,7 @@ namespace tinymind {
                                         OutputLayerConfiguration> NeuralNetworkType;
 
         typedef ValueType NeuralNetworkValueType;
-        typedef typename ConnectionTypeSelector<ValueType, IsTrainable>::ConnectionType ConnectionType;
+        typedef typename ConnectionTypeSelector<ValueType, HiddenLayerConfiguration, IsTrainable>::ConnectionType ConnectionType;
         typedef HiddenLayerTypeSelector<ConnectionType,
                                         NumberOfHiddenLayers,
                                         NumberOfNeuronsInHiddenLayers,
@@ -3098,7 +3447,7 @@ namespace tinymind {
                                         OutputLayerConfiguration> OutputLayerTypeSelectorType;
         typedef typename OutputLayerTypeSelectorType::OutputLayerType NeuralNetworkOutputLayerType;
         typedef TransferFunctionsPolicy NeuralNetworkTransferFunctionsPolicy;
-        typedef typename GradientsManagerChooser<
+        typedef typename GradientsManagerSelector<
                                                     NeuralNetworkType,
                                                     NumberOfHiddenLayers - 1,
                                                     IsTrainable>::GradientsManagerType GradientsManagerType;

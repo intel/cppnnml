@@ -59,7 +59,7 @@ int main(const int argc, char *argv[])
     ValueType learnedValues[NeuralNetworkType::NumberOfInputLayerNeurons];
     ValueType error;
 
-    tinymind::NetworkPropertiesFileManager<NeuralNetworkType>::writeHeader(testNeuralNet, results);
+    // tinymind::NetworkPropertiesFileManager<NeuralNetworkType>::writeHeader(testNeuralNet, results);
 
     for (auto i = 0; i < TRAINING_ITERATIONS; ++i)
     {
@@ -73,7 +73,7 @@ int main(const int argc, char *argv[])
         }
         testNeuralNet.getLearnedValues(&learnedValues[0]);
 
-        tinymind::NetworkPropertiesFileManager<NeuralNetworkType>::storeNetworkProperties(testNeuralNet, results, &output[0], &learnedValues[0]);
+        // tinymind::NetworkPropertiesFileManager<NeuralNetworkType>::storeNetworkProperties(testNeuralNet, results, &output[0], &learnedValues[0]);
         results << error << std::endl;
     }
 
