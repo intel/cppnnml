@@ -68,8 +68,8 @@ namespace tinymind {
             this->resetGradients();
         }
 
-        template<typename LayerType>
-        void updateBiasGradients(LayerType& layer, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateBiasGradients(CurrentLayerType& layer, const size_t nextNeuron, const ValueType& gradient)
         {
             ValueType averageGradient;
             ValueType* pValue;
@@ -89,8 +89,8 @@ namespace tinymind {
             this->updateGradients(gradient);
         }
 
-        template<typename LayerType>
-        void updateGradients(LayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateGradients(CurrentLayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
         {
             ValueType averageGradient;
             ValueType* pValue;
@@ -152,14 +152,14 @@ namespace tinymind {
     template<typename ValueType, size_t NumberOfGradients>
     struct GradientsHolder<ValueType, NumberOfGradients, 1>
     {
-        template<typename LayerType>
-        void updateBiasGradients(LayerType& layer, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateBiasGradients(CurrentLayerType& layer, const size_t nextNeuron, const ValueType& gradient)
         {
             layer.setBiasNeuronGradientForConnection(nextNeuron, gradient);
         }
 
-        template<typename LayerType>
-        void updateGradients(LayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateGradients(CurrentLayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
         {
             layer.setGradientForNeuronAndConnection(neuron, nextNeuron, gradient);
         }
@@ -170,13 +170,13 @@ namespace tinymind {
     {
         typedef typename NeuralNetworkType::NeuralNetworkValueType ValueType;
 
-        template<typename LayerType>
-        void updateBiasGradients(LayerType& layer, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateBiasGradients(CurrentLayerType& layer, const size_t nextNeuron, const ValueType& gradient)
         {
         }
 
-        template<typename LayerType>
-        void updateGradients(LayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateGradients(CurrentLayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
         {
         }
     };
@@ -201,14 +201,14 @@ namespace tinymind {
         static constexpr size_t InputToHiddenNumGradients = (NumberOfInputLayerNeurons * NumberOfInnerHiddenLayerNeurons) + NumberOfInnerHiddenLayerNeurons;
         static constexpr size_t NumberOfGradients = (LastHiddenToOutputNumGradients + InnerHiddenToLastHiddenNumGradients + InnerToInnerNumGradients + InputToHiddenNumGradients);
 
-        template<typename LayerType>
-        void updateBiasGradients(LayerType& layer, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateBiasGradients(CurrentLayerType& layer, const size_t nextNeuron, const ValueType& gradient)
         {
             this->gradientsHolder.updateBiasGradients(layer, nextNeuron, gradient);
         }
 
-        template<typename LayerType>
-        void updateGradients(LayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateGradients(CurrentLayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
         {
             this->gradientsHolder.updateGradients(layer, neuron, nextNeuron, gradient);
         }
@@ -235,14 +235,14 @@ namespace tinymind {
         static constexpr size_t InputToHiddenNumGradients = (NumberOfInputLayerNeurons * NumberOfInnerHiddenLayerNeurons) + NumberOfInnerHiddenLayerNeurons;        
         static constexpr size_t NumberOfGradients = (LastHiddenToOutputNumGradients + InnerHiddenToLastHiddenNumGradients + InputToHiddenNumGradients);
 
-        template<typename LayerType>
-        void updateBiasGradients(LayerType& layer, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateBiasGradients(CurrentLayerType& layer, const size_t nextNeuron, const ValueType& gradient)
         {
             this->gradientsHolder.updateBiasGradients(layer, nextNeuron, gradient);
         }
 
-        template<typename LayerType>
-        void updateGradients(LayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateGradients(CurrentLayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
         {
             this->gradientsHolder.updateGradients(layer, neuron, nextNeuron, gradient);
         }
@@ -265,14 +265,14 @@ namespace tinymind {
         static constexpr size_t InputToHiddenNumGradients = (NumberOfInputLayerNeurons * NumberOfHiddenLayerNeurons) + NumberOfHiddenLayerNeurons;
         static constexpr size_t NumberOfGradients = HiddenToOutputNumGradients + InputToHiddenNumGradients;
 
-        template<typename LayerType>
-        void updateBiasGradients(LayerType& layer, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateBiasGradients(CurrentLayerType& layer, const size_t nextNeuron, const ValueType& gradient)
         {
             this->gradientsHolder.updateBiasGradients(layer, nextNeuron, gradient);
         }
 
-        template<typename LayerType>
-        void updateGradients(LayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
+        template<typename CurrentLayerType>
+        void updateGradients(CurrentLayerType& layer, const size_t neuron, const size_t nextNeuron, const ValueType& gradient)
         {
             this->gradientsHolder.updateGradients(layer, neuron, nextNeuron, gradient);
         }
@@ -417,8 +417,8 @@ namespace tinymind {
     template<typename ValueType>
     struct BiasNeuronConnectionWeightUpdater<ValueType, 1>
     {
-        template<typename LayerType>
-        static void updateBiasConnectionWeights(LayerType& previousLayer, const size_t neuron, const ValueType& learningRate, const ValueType& momentumRate, const ValueType& accelerationRate)
+        template<typename CurrentLayerType>
+        static void updateBiasConnectionWeights(CurrentLayerType& previousLayer, const size_t neuron, const ValueType& learningRate, const ValueType& momentumRate, const ValueType& accelerationRate)
         {
             const ValueType previousDeltaWeight = previousLayer.getBiasNeuronPreviousDeltaWeightForConnection(neuron);
             const ValueType currentDeltaWeight = previousLayer.getBiasNeuronDeltaWeightForConnection(neuron);
@@ -433,8 +433,8 @@ namespace tinymind {
     template<typename ValueType>
     struct BiasNeuronConnectionWeightUpdater<ValueType, 0>
     {
-        template<typename LayerType>
-        static void updateBiasConnectionWeights(LayerType& layer, const size_t neuron, const ValueType& learningRate, const ValueType& momentumRate, const ValueType& accelerationRate)
+        template<typename CurrentLayerType>
+        static void updateBiasConnectionWeights(CurrentLayerType& layer, const size_t neuron, const ValueType& learningRate, const ValueType& momentumRate, const ValueType& accelerationRate)
         {
         }
     };
@@ -509,14 +509,14 @@ namespace tinymind {
     {
         typedef typename TransferFunctionsPolicy::TransferFunctionsValueType ValueType;
         
-        template<typename LayerType, typename NextLayerType>
-        static void calculateAndSetNodeDeltas(LayerType& layer, const NextLayerType& nextLayer)
+        template<typename CurrentLayerType, typename NextLayerType>
+        static void calculateAndSetNodeDeltas(CurrentLayerType& layer, const NextLayerType& nextLayer)
         {
             ValueType sum;
             ValueType nodeDelta;
             ValueType outputValue;
 
-            for(size_t neuron = 0; neuron < LayerType::NumberOfNeuronsInLayer;++neuron)
+            for(size_t neuron = 0; neuron < CurrentLayerType::NumberOfNeuronsInLayer;++neuron)
             {
                 sum = 0;
                 for (size_t nextNeuron = 0; nextNeuron < NextLayerType::NumberOfNeuronsInLayer; ++nextNeuron)
@@ -538,14 +538,14 @@ namespace tinymind {
     {
         typedef typename TransferFunctionsPolicy::TransferFunctionsValueType ValueType;
 
-        template<typename LayerType, typename NextLayerType>
-        static void calculateAndSetNodeDeltas(LayerType& layer, const NextLayerType& nextLayer)
+        template<typename CurrentLayerType, typename NextLayerType>
+        static void calculateAndSetNodeDeltas(CurrentLayerType& layer, const NextLayerType& nextLayer)
         {
             ValueType sum;
             ValueType nodeDelta;
             ValueType outputValue;
 
-            for(size_t neuron = 0; neuron < LayerType::NumberOfNeuronsInLayer;++neuron)
+            for(size_t neuron = 0; neuron < CurrentLayerType::NumberOfNeuronsInLayer;++neuron)
             {
                 sum = 0;
                 for (size_t nextNeuron = 0; nextNeuron < NextLayerType::NumberOfNeuronsInLayer; ++nextNeuron)
@@ -1045,11 +1045,11 @@ namespace tinymind {
             this->mMomentumRate = value;
         }
 
-        template<typename LayerType, typename PreviousLayerType>
-        void updateConnectionWeights(LayerType& layer, PreviousLayerType& previousLayer)
+        template<typename CurrentLayerType, typename PreviousLayerType>
+        void updateConnectionWeights(CurrentLayerType& layer, PreviousLayerType& previousLayer)
         {
             typedef typename BiasNeuronConnectionWeightUpdaterTypeSelector<  ValueType,
-                                                                             LayerType::LayerType,
+                                                                             CurrentLayerType::LayerType,
                                                                              PreviousLayerType::LayerType,
                                                                              PreviousLayerType::NumberOfBiasNeuronsInLayer>::BiasNeuronConnectionWeightUpdaterType BiasNeuronConnectionWeightUpdaterType;
             ValueType previousDeltaWeight;
@@ -1057,7 +1057,7 @@ namespace tinymind {
             ValueType newDeltaWeight;
             ValueType currentWeight;
 
-            for (size_t neuron = 0; neuron < LayerType::NumberOfNeuronsInLayer; ++neuron)
+            for (size_t neuron = 0; neuron < CurrentLayerType::NumberOfNeuronsInLayer; ++neuron)
             {
                 for (size_t previousNeuron = 0; previousNeuron < PreviousLayerType::NumberOfNeuronsInLayer; ++previousNeuron)
                 {
